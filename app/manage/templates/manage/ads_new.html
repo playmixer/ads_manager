@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Новая реклама{% endblock %}
+
+{% block content %}
+    {% include 'components/messages_of_error.html' %}
+    <form action="{{ url_for('manage.ads_new', group_id=ads_group.id) }}" method="POST" enctype="multipart/form-data">
+        {{ form.csrf_token }}
+        <div class="row g-3 align-items-center mb-2">
+            <div class="col-md-2">
+                {{ form.title.label(class_='form-label', for=form.title.name) }}
+            </div>
+            <div class="col-md-10">
+                {{ form.title(class_='form-control') }}
+            </div>
+        </div>
+        <div class="row g-3 align-items-center mb-2">
+            <div class="col-md-2">
+                {{ form.file.label(class_='form-label') }}
+            </div>
+            <div class="col-md-10">
+                {{ form.file(class_='form-control') }}
+            </div>
+        </div>
+        <div class="row g-3 align-items-center mb-2">
+            <div class="col-md-2">
+                {{ form.time_start.label(class_='form-label') }}
+            </div>
+            <div class="col-md-10">
+                {{ form.time_start(class_='form-control') }}
+            </div>
+        </div>
+        <div class="row g-3 align-items-center mb-2">
+            <div class="col-md-2">
+                {{ form.time_end.label(class_='form-label') }}
+            </div>
+            <div class="col-md-10">
+                {{ form.time_end(class_='form-control') }}
+            </div>
+        </div>
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-outline-primary">Добавить</button>
+        </div>
+    </form>
+{% endblock %}

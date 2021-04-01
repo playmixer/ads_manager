@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}base{% endblock %}</title>
+    {% block css %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    {% endblock %}
+</head>
+<body>
+<div class="container bg-white">
+    {% if auth.is_authenticated() %}
+        {% include 'components/base_navbar.html' %}
+    {% endif %}
+    {% block content %}
+    {% endblock %}
+</div>
+
+{% block script %}
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+{% endblock %}
+</body>
+</html>

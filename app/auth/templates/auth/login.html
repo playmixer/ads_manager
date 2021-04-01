@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}auth{% endblock %}
+
+{% block content %}
+    <div class="row" style="display: flex; justify-content: center">
+        <div class="col-5">
+            <h3 style="display: flex; justify-content: center">Авторизация</h3>
+            {% include 'components/messages_of_error.html' %}
+            <form action="{{ url_for('auth.login') }}" method="POST">
+                <div class="mb-3">
+                    {{ form.csrf_token }}
+                    {{ form.username.label(class_="form-label", for=form.username.name) }} {{ form.username(class_="form-control") }}
+                    {{ form.password.label(class_="form-label") }}{{ form.password(class_="form-control") }}
+                </div>
+                <button type="submit" class="btn btn-primary">Войти</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

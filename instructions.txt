@@ -1,0 +1,7 @@
+
+
+
+# MySQL
+apt-get install python-mysqldb (Linux Ubuntu, ...)
+cd /usr/ports/databases/py-MySQLdb && make install clean (FreeBSD)
+yum install MySQL-python (Linux Fedora, CentOS ...)

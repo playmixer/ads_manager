@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}{% endblock %}
+
+{% block content %}
+    {% with title=ads_group.title %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+    <div style="display: flex; justify-content: space-between">
+        <div class="mb-2">
+            <a href="{{ url_for('manage.ads_group_edit', group_id=ads_group.id) }}" class="btn btn-outline-primary">Редактировать</a>
+            <a href="#" class="btn btn-outline-danger">Удалить</a>
+        </div>
+        <div>
+            <a href="{{ url_for('manage.ads_new', group_id=ads_group.id) }}" class="btn btn-primary">
+                Добавить рекламу
+            </a>
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+        <th>Название</th>
+        <th>Дата начала показа</th>
+        <th>Дата окончания показа</th>
+        <th></th>
+        <th></th>
+        </thead>
+        <tbody>
+        {% for ads_item in ads_list %}
+            <tr>
+                <td>
+                    {{ ads_item.title }}
+                </td>
+                <td>
+                    {{ ads_item.time_start }}
+                </td>
+                <td>
+                    {{ ads_item.time_end }}
+                </td>
+                <td>
+                    {% set exists = file_is_exists(ads_item.path) %}
+                    {% if exists %}
+                        <span class="text-success">Ок</span>
+                    {% else %}
+                        <span class="text-danger">Не найден</span>
+                    {% endif %}
+                </td>
+                <td><a href="{{ url_for('manage.ads_view', group_id=ads_group.id, ads_id=ads_item.id ) }}"
+                       class="link-secondary">перейти</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
