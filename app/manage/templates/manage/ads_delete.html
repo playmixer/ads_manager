@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить{% endblock %}
+
+{% block content %}
+    {% with title='Удалить '+ads_item.title+'?' %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+    <form action="{{ url_for('manage.ads_delete', group_id=ads_group.id, ads_id=ads_item.id) }}" method="POST">
+        {{ form.csrf_token }}
+        {{ form.submit_yes(class_='btn btn-primary') }}
+        <a href="{{ url_for('manage.ads_view', group_id=ads_group.id, ads_id=ads_item.id) }}" class="btn btn-outline-danger">Отмена</a>
+    </form>
+{% endblock %}

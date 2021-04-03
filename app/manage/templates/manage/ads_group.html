@@ -9,7 +9,7 @@
     <div style="display: flex; justify-content: space-between">
         <div class="mb-2">
             <a href="{{ url_for('manage.ads_group_edit', group_id=ads_group.id) }}" class="btn btn-outline-primary">Редактировать</a>
-            <a href="#" class="btn btn-outline-danger">Удалить</a>
+            <a href="{{ url_for('manage.ads_group_delete', group_id=ads_group.id) }}" class="btn btn-outline-danger">Удалить</a>
         </div>
         <div>
             <a href="{{ url_for('manage.ads_new', group_id=ads_group.id) }}" class="btn btn-primary">
@@ -22,20 +22,23 @@
         <th>Название</th>
         <th>Дата начала показа</th>
         <th>Дата окончания показа</th>
-        <th></th>
+        <th>Файл</th>
         <th></th>
         </thead>
         <tbody>
         {% for ads_item in ads_list %}
             <tr>
                 <td>
-                    {{ ads_item.title }}
+                    <a href="{{ url_for('manage.ads_view', group_id=ads_group.id, ads_id=ads_item.id ) }}"
+                       class="link-secondary">
+                        {{ ads_item.title }}
+                    </a>
                 </td>
                 <td>
-                    {{ ads_item.time_start }}
+                    {{ ads_item.time_start|datetime('%d.%m.%Y') }}
                 </td>
                 <td>
-                    {{ ads_item.time_end }}
+                    {{ ads_item.time_end|datetime('%d.%m.%Y') }}
                 </td>
                 <td>
                     {% set exists = file_is_exists(ads_item.path) %}
@@ -45,8 +48,10 @@
                         <span class="text-danger">Не найден</span>
                     {% endif %}
                 </td>
-                <td><a href="{{ url_for('manage.ads_view', group_id=ads_group.id, ads_id=ads_item.id ) }}"
-                       class="link-secondary">перейти</a></td>
+                <td>
+                    <a href="{{ url_for('manage.ads_view', group_id=ads_group.id, ads_id=ads_item.id ) }}"
+                       class="link-secondary">перейти</a>
+                </td>
             </tr>
         {% endfor %}
         </tbody>

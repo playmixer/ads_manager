@@ -3,14 +3,11 @@ from src.models import User
 
 
 class Auth:
-    username = None
-
     @classmethod
     def login(cls, username: str, password: str):
         if username == 'admin' and password == 'admin':
             session['auth'] = True
             session['username'] = username.lower()
-            cls.username = username.lower()
 
     @classmethod
     def logout(cls):
@@ -31,3 +28,7 @@ class Auth:
             user = User.query.filter_by(username=cls.get_username()).first()
             return user
         return False
+
+    @classmethod
+    def username(cls):
+        return session.get('username')

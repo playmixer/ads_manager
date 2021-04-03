@@ -1,0 +1,12 @@
+<div>
+    {{ label }}
+    {% if onYes %}
+        <a href="{{ onYes }}" class="btn btn-outline-primary">Да</a>
+    {% endif %}
+    {% if onNo %}
+        <a href="{{ onNo }}" class="btn btn-outline-primary">Нет</a>
+    {% endif %}
+    {% if onCancel %}
+        <a href="{{ onCancel }}" class="btn btn-outline-danger">Отмена</a>
+    {% endif %}
+</div>

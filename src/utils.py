@@ -38,25 +38,35 @@ def create_path():
     day = date_now.strftime('%d')
 
     arr_path = [UPLOAD_FOLDER, year, month, day]
-    path = os.path.join(*arr_path[1:])
+    # path = os.path.join(*arr_path[1:])
     mkdir(arr_path)
-    return path
+    return arr_path[1:]
 
 
 def save_file(file):
     filename = get_name_for_file(20)
     ext = extract_extension(file.filename)
     unique_path = create_path()
-
-    path = os.path.join(unique_path, '.'.join([filename, ext]))
+    filename_with_ext = '.'.join([filename, ext])
+    path = os.path.join(*unique_path, filename_with_ext)
+    filename_uniq = '-'.join([*unique_path, filename])
     file.save(os.path.join(UPLOAD_FOLDER, path))
 
-    return path, filename, ext
+    return path, filename_uniq, ext
 
 
 def file_exists(path):
     path_file = os.path.join(UPLOAD_FOLDER, path)
     if os.path.exists(path_file):
         if os.path.isfile(path_file):
+            return True
+    return False
+
+
+def remove_file(path):
+    uploaded_file = os.path.join(UPLOAD_FOLDER, path)
+    if os.path.exists(uploaded_file):
+        if os.path.isfile(uploaded_file):
+            os.remove(uploaded_file)
             return True
     return False
