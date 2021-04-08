@@ -8,9 +8,18 @@
     {% with title=ads_item.title %}
         {% include 'components/label_of_page.html' %}
     {% endwith %}
+    {% with crumbs=[
+        {'url': url_for('manage.index'), 'title': 'Главная страница'},
+        {'url': url_for('manage.ads_group', group_id=ads_item.group_id), 'title': ads_group.title},
+        {'url': '', 'title': ads_item.title}
+    ] %}
+        {% include 'components/breadcrumbs.html' %}
+    {% endwith %}
+    {% include 'components/flash_messages.html' %}
 
     <div class="mb-2">
-        <a href="{{ url_for('api.get_clip', clip=ads_item.filename) }}" class="btn btn-outline-primary" target="_blank">
+        <a href="{{ url_for('manage.get_clip', filename=ads_item.filename) }}" class="btn btn-outline-primary"
+           target="_blank">
             Открыть ролик
         </a>
         <a href="{{ url_for('manage.ads_delete', group_id=ads_group.id, ads_id=ads_item.id) }}"

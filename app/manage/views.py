@@ -1,7 +1,10 @@
-from flask import Blueprint, render_template, flash, request, redirect, url_for
+from flask import Blueprint, render_template, flash, request, redirect, url_for, make_response, send_file
 from .forms import *
 from app.auth import Auth, decorators
-from src.models import GroupAdvertise, Advertise
+from app.manage.models import GroupAdvertise, Advertise, AdvertiseViewed, db
+from src import exceptions
+from src.logger import logger
+import os
 
 __all__ = ['manage_app']
 
@@ -30,7 +33,7 @@ def ads_groups():
             GroupAdvertise.create(group_title, user)
 
         adv_group_list = GroupAdvertise.get_group_list(filters=[GroupAdvertise.Filters.actual])
-        return render_template('manage/ads_group_list.html', form=form, group_list=adv_group_list)
+        return render_template('manage/ads_group_list.html', form=form, group_list=adv_group_list, ads_viewed=AdvertiseViewed)
     except Exception as err:
         return str(err)
 
@@ -48,13 +51,13 @@ def ads_group_edit(group_id):
         if form.validate_on_submit():
             title = request.form.get('title')
             status = request.form.get('status')
-            print(status)
             GroupAdvertise.update(
                 id=group.id,
                 title=title,
                 status=status,
                 user=Auth.get_user()
             )
+            flash('Изменения сохранены', 'success')
             return redirect(request.path)
 
         return render_template('manage/ads_group_edit.html', form=form, ads_group=group)
@@ -106,12 +109,12 @@ def ads_new(group_id):
         form = FormNewAdvertise()
         if form.validate_on_submit():
             if 'file' not in request.files:
-                flash('Нет файловой части')
+                flash('Нет файловой части', 'error')
                 return redirect(request.url)
 
             file = request.files['file']
             if file.filename == '':
-                flash('No selected file')
+                flash('No selected file', 'error')
                 return redirect(request.url)
 
             path, filename, ext = save_file(file)
@@ -129,7 +132,6 @@ def ads_new(group_id):
                 time_end=time_end,
                 user=Auth.get_user()
             )
-            print('onSubmit', ads_)
             if ads_:
                 return redirect(url_for('.ads_view', group_id=group_id, ads_id=ads_.id))
 
@@ -158,6 +160,7 @@ def ads_view(group_id, ads_id):
                 time_end=request.form.get('time_end'),
                 user=Auth.get_user()
             )
+            flash('Изменения сохранены', 'success')
             return redirect(request.path)
 
         return render_template('manage/ads.html', form=form, ads_item=ads_item, ads_group=group)
@@ -186,3 +189,35 @@ def ads_delete(group_id, ads_id):
         return render_template('manage/ads_delete.html', form=form_yes, ads_item=ads_item, ads_group=group)
     except Exception as err:
         return str(err)
+
+
+@manage_app.route('/getClip/<filename>')
+def get_clip(filename: str):
+    from src.utils import file_exists
+    from flask import current_app
+    try:
+        UPLOAD_FOLDER = current_app.config['UPLOAD_FOLDER']
+        ads = Advertise.get_ads_by_filename(filename)
+        if not ads:
+            raise exceptions.AdvertiseNotFound('Advertise not found')
+
+        if not file_exists(ads.path):
+            raise exceptions.FileNotFound('File not found')
+
+        path = os.path.join(UPLOAD_FOLDER, ads.path)
+
+        response = make_response(send_file(path, attachment_filename="video.mp4", conditional=True))
+        response.headers['Content-Type'] = 'video/mp4'
+
+        if response.status_code == 200:
+            device_id = request.args.get('deviceId')
+            AdvertiseViewed.viewed(filename, device_id)
+
+        return response
+
+    except (exceptions.FileNotFound, exceptions.AdvertiseNotFound) as err:
+        return str(err), 404
+    except Exception as err:
+        logger.error('get_clip filename=' + filename + '\n\t' + str(err))
+        return str(err), 500
+

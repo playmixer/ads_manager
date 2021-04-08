@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, FileField, SubmitField, SelectField
 from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired, Optional
-from src.models import GroupAdvertise
+from app.manage.models import GroupAdvertise
 
 
 class FormNewGroup(FlaskForm):
@@ -25,7 +25,7 @@ class FormEditAdvertise(FlaskForm):
     title = StringField('Название', validators=[DataRequired()])
     # file = FileField('Файл', validators=[DataRequired()])
     time_start = DateField('Дата начала показа', validators=[DataRequired()], format='%Y-%m-%d')
-    time_end = DateField('Дата окончания показа', validators=[DataRequired()], format='%Y-%m-%d')
+    time_end = DateField('Дата окончания показа', validators=[Optional()], format='%Y-%m-%d')
 
 
 class FormYes(FlaskForm):

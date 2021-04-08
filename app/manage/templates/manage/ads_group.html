@@ -6,6 +6,9 @@
     {% with title=ads_group.title %}
         {% include 'components/label_of_page.html' %}
     {% endwith %}
+    {% with crumbs=[{'url': url_for('manage.index'), 'title': 'Главная страница'},{'url': '', 'title': ads_group.title},] %}
+        {% include 'components/breadcrumbs.html' %}
+    {% endwith %}
     <div style="display: flex; justify-content: space-between">
         <div class="mb-2">
             <a href="{{ url_for('manage.ads_group_edit', group_id=ads_group.id) }}" class="btn btn-outline-primary">Редактировать</a>

@@ -21,7 +21,7 @@ def login():
         auth = Auth()
         auth.login(username, password)
         if not auth.is_authenticated():
-            flash('Не верный логин или пароль')
+            flash('Не верный логин или пароль', 'error')
             return render_template('auth/login.html', form=form, error='error')
         return redirect(url_for('manage.index'))
     return render_template('auth/login.html', form=form)

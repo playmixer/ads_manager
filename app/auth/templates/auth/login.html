@@ -6,7 +6,7 @@
     <div class="row" style="display: flex; justify-content: center">
         <div class="col-5">
             <h3 style="display: flex; justify-content: center">Авторизация</h3>
-            {% include 'components/messages_of_error.html' %}
+            {% include 'components/flash_messages.html' %}
             <form action="{{ url_for('auth.login') }}" method="POST">
                 <div class="mb-3">
                     {{ form.csrf_token }}

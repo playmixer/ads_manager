@@ -33,7 +33,7 @@
                 </li>
             </ul>
 
-            <span style="margin-right: 5px">{{ auth.username() }}</span>
+            <span style="margin-right: 5px">{{ auth.get_username() }}</span>
             <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary d-flex">Выход</a>
         </div>
     </div>

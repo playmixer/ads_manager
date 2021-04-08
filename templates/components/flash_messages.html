@@ -1,0 +1,13 @@
+{% set messages = get_flashed_messages(with_categories=true) %}
+{% for categiries, message in messages %}
+    {% if categiries == 'error' %}
+        {% set alert_style = 'alert-danger' %}
+    {% elif categiries == 'success' %}
+        {% set alert_style = 'alert-success' %}
+    {% else %}
+        {% set alert_style = 'alert-primary' %}
+    {% endif %}
+    <div class="alert {{ alert_style }}" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}

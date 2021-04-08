@@ -1,0 +1,12 @@
+<div class="mb-5">
+    {% for crumb in crumbs %}
+        {% if loop.index == crumbs|length %}
+            {{ crumb.title }}
+        {% elif loop.index < crumbs|length %}
+            <a href="{{ crumb.url }}" class="link-secondary">{{ crumb.title }}</a>
+        {% endif %}
+        {% if loop.index < crumbs|length %}
+            >
+        {% endif %}
+    {% endfor %}
+</div>

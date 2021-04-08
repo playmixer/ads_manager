@@ -5,7 +5,7 @@ import random
 import os
 from datetime import datetime
 
-__all__ = ['save_file', 'file_exists']
+__all__ = ['save_file', 'file_exists', 'generate_string']
 
 UPLOAD_FOLDER = current_app.config['UPLOAD_FOLDER']
 
