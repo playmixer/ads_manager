@@ -2,6 +2,7 @@ from flask import Blueprint, request, redirect, url_for, make_response, send_fil
 from .views import render_json
 from src import exceptions
 from app.auth import Auth
+from src.logger import logger
 
 __all__ = ['api_app_auth']
 
@@ -30,7 +31,7 @@ def signup():
         if not user:
             raise exceptions.NotAuthenticated('Username or password is not correct')
 
-        jwt = Auth.gen_jwt(user)
+        jwt = Auth.gen_jwt(user, device_id)
         token = Auth.create_session(user, ip, device_id).token
         return render_json(result=True, data={
             'accessToken': jwt,
@@ -40,9 +41,45 @@ def signup():
     except exceptions.NotHaveAttributes as err:
         return render_json(result=False, message=str(err))
     except Exception as err:
+        logger.error('signup \n\t' + str(err))
         return render_json(result=False, message=str(err))
 
 
 @api_app_auth.route('/refreshToken', methods=['POST'])
 def refresh_token():
-    ...
+    try:
+        token = request.args.get('token')
+        if not token:
+            raise Exception('Args not have token')
+
+        sess = Auth.refresh_session(token)
+
+        if not sess:
+            return '401 Unauthorized', 401
+
+        user = sess.user
+        jwt = Auth.gen_jwt(user, sess.device_id)
+        token = sess.token
+        return render_json(result=True, data={
+            'accessToken': jwt,
+            'refreshToken': token
+        })
+    except Exception as err:
+        logger.error('refresh_token \n\t' + str(err))
+        return render_json(result=False, message=str(err))
+
+
+@api_app_auth.route('/logout', methods=['GET', 'POST'])
+def logout():
+    try:
+        token = request.args.get('token')
+        if not token:
+            raise Exception('Args not have token')
+
+        Auth.logout_m(token)
+
+        return render_json(result=True, message='Logout')
+
+    except Exception as err:
+        logger.error('logout \n\t' + str(err))
+        return render_json(result=False, message=str(err))

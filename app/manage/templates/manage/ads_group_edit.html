@@ -7,6 +7,13 @@
         {% include 'components/label_of_page.html' %}
     {% endwith %}
 
+    {% with crumbs=[
+        {'url': url_for('manage.index'), 'title': 'Главная страница'},
+        {'url': url_for('manage.ads_group', group_id=ads_group.id), 'title': ads_group.title},
+        {'url': '', 'title': "Редактировать"},
+    ] %}
+        {% include 'components/breadcrumbs.html' %}
+    {% endwith %}
     {% include 'components/flash_messages.html' %}
     <div>
         <form action="{{ url_for('manage.ads_group_edit', group_id=ads_group.id) }}" method="POST">

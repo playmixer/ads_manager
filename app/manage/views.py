@@ -5,6 +5,7 @@ from app.manage.models import GroupAdvertise, Advertise, AdvertiseViewed, db
 from src import exceptions
 from src.logger import logger
 import os
+from app.auth.utils import get_token_from_header
 
 __all__ = ['manage_app']
 
@@ -25,14 +26,13 @@ def index():
 @decorators.login_required
 def ads_groups():
     try:
+        user = Auth.get_user()
         form = FormNewGroup()
         if form.validate_on_submit():
-            auth = Auth()
-            user = auth.get_user()
             group_title = request.form.get('title')
             GroupAdvertise.create(group_title, user)
 
-        adv_group_list = GroupAdvertise.get_group_list(filters=[GroupAdvertise.Filters.actual])
+        adv_group_list = GroupAdvertise.get_group_list(filters=[GroupAdvertise.Filters.actual]).filter_by(user_id=user.id)
         return render_template('manage/ads_group_list.html', form=form, group_list=adv_group_list, ads_viewed=AdvertiseViewed)
     except Exception as err:
         return str(err)
@@ -42,7 +42,7 @@ def ads_groups():
 @decorators.login_required
 def ads_group_edit(group_id):
     try:
-        group = GroupAdvertise.get_group(group_id)
+        group = GroupAdvertise.get_group(group_id).filter_by(user_id=Auth.get_user().id).first()
         if not group:
             raise Exception('Advertise group not found')
 
@@ -69,7 +69,8 @@ def ads_group_edit(group_id):
 @decorators.login_required
 def ads_group_delete(group_id):
     try:
-        group = GroupAdvertise.get_group(group_id)
+        user = Auth.get_user()
+        group = GroupAdvertise.get_group(group_id, user).all()
         if not group:
             raise Exception('Advertise group not found')
 
@@ -87,7 +88,9 @@ def ads_group_delete(group_id):
 @decorators.login_required
 def ads_group(group_id):
     try:
-        group = GroupAdvertise.get_group(group_id)
+        user = Auth.get_user()
+        group = GroupAdvertise.get_group(group_id).filter_by(user_id=user.id).first()
+
         if not group:
             raise Exception('Advertise group not found')
         ads_list = Advertise.get_ads_list_by_group(group_id, [Advertise.Filters.actual])
@@ -102,7 +105,7 @@ def ads_group(group_id):
 def ads_new(group_id):
     from src.utils import save_file
     try:
-        group = GroupAdvertise.get_group(group_id)
+        group = GroupAdvertise.get_group(group_id).first()
         if not group:
             raise Exception('Advertise group not found')
 
@@ -120,6 +123,7 @@ def ads_new(group_id):
             path, filename, ext = save_file(file)
 
             title = request.form.get('title')
+            shows_per_day = request.form.get('shows_per_day')
             time_start = request.form.get('time_start')
             time_end = request.form.get('time_end')
             ads_ = Advertise.create(
@@ -127,6 +131,7 @@ def ads_new(group_id):
                 group_id=group_id,
                 path=path,
                 filename=filename,
+                shows_per_day=shows_per_day,
                 ext=ext,
                 time_start=time_start,
                 time_end=time_end,
@@ -144,7 +149,7 @@ def ads_new(group_id):
 @decorators.login_required
 def ads_view(group_id, ads_id):
     try:
-        group = GroupAdvertise.get_group(group_id)
+        group = GroupAdvertise.get_group(group_id).filter_by(user_id=Auth.get_user().id).first()
         if not group:
             raise Exception('Advertise group not found')
         ads_item = Advertise.get_ads_by_group(group_id, ads_id)
@@ -156,6 +161,7 @@ def ads_view(group_id, ads_id):
             Advertise.update(
                 id=ads_item.id,
                 title=request.form.get('title'),
+                shows_per_day=request.form.get('shows_per_day'),
                 time_start=request.form.get('time_start'),
                 time_end=request.form.get('time_end'),
                 user=Auth.get_user()
@@ -172,7 +178,7 @@ def ads_view(group_id, ads_id):
 @decorators.login_required
 def ads_delete(group_id, ads_id):
     try:
-        group = GroupAdvertise.get_group(group_id)
+        group = GroupAdvertise.get_group(group_id).first()
         if not group:
             raise Exception('Advertise group not found')
         ads_item = Advertise.get_ads_by_group(group_id, ads_id)
@@ -192,6 +198,7 @@ def ads_delete(group_id, ads_id):
 
 
 @manage_app.route('/getClip/<filename>')
+@decorators.authenticated_required
 def get_clip(filename: str):
     from src.utils import file_exists
     from flask import current_app
@@ -210,8 +217,12 @@ def get_clip(filename: str):
         response.headers['Content-Type'] = 'video/mp4'
 
         if response.status_code == 200:
-            device_id = request.args.get('deviceId')
-            AdvertiseViewed.viewed(filename, device_id)
+            token = get_token_from_header()
+            if token:
+                payload = Auth.get_jwt_payload(token)
+                device_id = payload['device_id']
+
+                AdvertiseViewed.viewed(filename, device_id)
 
         return response
 

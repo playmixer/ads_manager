@@ -1,6 +1,6 @@
 from flask import session, current_app
 from .models import User, Sessions, db
-from .utils import generate_string, encrypt_sha256, decrypt_sha256
+from .utils import generate_string, encrypt_sha256, decrypt_sha256, get_token_from_header
 import json
 import base64
 import datetime
@@ -11,6 +11,14 @@ class Auth:
     def login_m(cls, username: str, password: str):
         user = User.check_password(username, password)
         return user
+
+    @classmethod
+    def logout_m(cls, token):
+        return Sessions.delete_token(token)
+
+    @classmethod
+    def registration(cls, username, password):
+        return User.registration(username, password)
 
     @classmethod
     def gen_token(cls):
@@ -61,18 +69,20 @@ class Auth:
         return sess
 
     @classmethod
-    def get_refresh_token(cls):
-        return generate_string(50)
+    def refresh_session(cls, token):
+        sess = Sessions.refresh(token)
+        return sess
 
     @classmethod
-    def gen_jwt(cls, user: User):
+    def gen_jwt(cls, user: User, device_id: str = ''):
         SECRET_KEY = current_app.config['SECRET_KEY']
-        expiration = (datetime.datetime.utcnow() + datetime.timedelta(days=1)).timestamp()
+        expiration = (datetime.datetime.utcnow() + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S')
         header = {'alg': 'HS256', 'typ': 'JWT'}
         payload = {
             'user_id': user.id,
             'exp': expiration,
-            'admin': False
+            'admin': False,
+            'device_id': device_id
         }
         b64_header = base64.b64encode(json.dumps(header).encode()).decode()
         b64_payload = base64.b64encode(json.dumps(payload).encode()).decode()
@@ -89,3 +99,12 @@ class Auth:
             payload_dict = json.loads(base64.b64decode(payload))
             return header_dict, payload_dict
         return False
+
+    @classmethod
+    def get_jwt_payload(cls, jwt: str = None):
+        if jwt is None:
+            jwt = get_token_from_header()
+        _, b64_payload, _ = jwt.split('.')
+        jwt_decode = base64.b64decode(b64_payload)
+        payload = json.loads(jwt_decode)
+        return payload

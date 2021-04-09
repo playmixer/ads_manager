@@ -27,6 +27,14 @@
         </div>
         <div class="row g-3 align-items-center mb-2">
             <div class="col-md-2">
+                {{ form.shows_per_day.label(class_='form-label') }}
+            </div>
+            <div class="col-md-2">
+                {{ form.shows_per_day(class_='form-control', value=0) }}
+            </div>
+        </div>
+        <div class="row g-3 align-items-center mb-2">
+            <div class="col-md-2">
                 {{ form.time_start.label(class_='form-label') }}
             </div>
             <div class="col-md-2">

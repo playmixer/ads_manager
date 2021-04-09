@@ -1,6 +1,9 @@
 from flask import Blueprint, request, redirect, url_for, make_response, send_file, jsonify
 from app.manage.models import GroupAdvertise, Advertise, AdvertiseViewed
 from . import types
+from app.auth import decorators
+from src.logger import logger
+from app.auth.auth import Auth
 
 __all__ = ['api_app', 'render_json']
 
@@ -15,7 +18,7 @@ def render_json(*, result=True, data=None, message=None):
     res = {
         'Result': 'Ok' if result else 'Fail'
     }
-    if data:
+    if data is not None:
         res['Data'] = data
     if message:
         res['Message'] = message
@@ -29,28 +32,42 @@ def test():
 
 
 @api_app.route('/getGroups')
+@decorators.authenticated_required
 def get_groups():
-    groups = GroupAdvertise.get_group_list([GroupAdvertise.Filters.actual])
-    parsed_groups = types.TypeGroupsAdvertise.parse_obj(groups.all())
+    try:
+        payload = Auth.get_jwt_payload()
+        user_id = payload.get('user_id')
 
-    return render_json(result=True, data=parsed_groups.dict()["__root__"])
+        groups = GroupAdvertise.get_group_list([GroupAdvertise.Filters.actual]).filter_by(user_id=user_id)
+        parsed_groups = types.TypeGroupsAdvertise.parse_obj(groups.all())
+
+        return render_json(result=True, data=parsed_groups.dict()["__root__"])
+    except Exception as err:
+        logger.error('get_group \n\t' + str(err))
+        render_json(result=False)
 
 
 @api_app.route('/getAdsGroup')
+@decorators.authenticated_required
 def get_ads_group():
     try:
         token = request.args.get('ads_token')
         if not token:
             raise Exception('Token is missed')
 
+        payload = Auth.get_jwt_payload()
+        device_id = payload['device_id']
+
         ads = Advertise.get_ads_by_group_token(token)
         if not ads:
-            raise Exception('Advertise not found')
-
-        parsed_ads = types.TypeAdvertiseList.from_orm(ads.all())
+            # raise Exception('Advertise not found')
+            return render_json(result=True, data=[])
+        ads_filtered = list(filter(lambda x: x.have_shows_per_day_by_device(device_id), ads.all()))
+        parsed_ads = types.TypeAdvertiseList.from_orm(ads_filtered)
         return render_json(result=True, data=parsed_ads.dict()['__root__'])
 
     except Exception as err:
+        logger.error('get_ads_group \n\t' + str(err))
         return render_json(result=False, message=str(err))
 
 

@@ -25,6 +25,8 @@
         <th>Название</th>
         <th>Дата начала показа</th>
         <th>Дата окончания показа</th>
+        <th>За 24 ч.</th>
+        <th>За неделю</th>
         <th>Файл</th>
         <th></th>
         </thead>
@@ -43,6 +45,8 @@
                 <td>
                     {{ ads_item.time_end|datetime('%d.%m.%Y') }}
                 </td>
+                <td>{{ ads_item.get_viewed_24h().count() }}</td>
+                <td>{{ ads_item.get_viewed_7d().count() }}</td>
                 <td>
                     {% set exists = file_is_exists(ads_item.path) %}
                     {% if exists %}

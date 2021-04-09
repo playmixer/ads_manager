@@ -72,12 +72,12 @@ class GroupAdvertise(DateMixin, db.Model):
     def get_group_list(cls, filters: List[int] = []):
         group_list = GroupAdvertise.query
         if cls.Filters.actual in filters:
-            group_list = group_list.filter_by(time_delete=None)
+            group_list = group_list.filter_by(time_delete=None, status=cls.StatusType.enabled)
         return group_list
 
     @classmethod
     def get_group(cls, group_id: int):
-        return GroupAdvertise.query.get(group_id)
+        return GroupAdvertise.query.filter_by(id=group_id)
 
     @classmethod
     def get_group_by_token(cls, token: str):
@@ -95,10 +95,29 @@ class Advertise(DateMixin, db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey(GroupAdvertise.id), nullable=False)
     path = db.Column(db.String(200), unique=True, nullable=False)
     time_start = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.utcnow)
+    shows_per_day = db.Column(db.Integer, default=0)
     time_end = db.Column(db.DATETIME)
     time_delete = db.Column(db.DATETIME)
     who_create = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
     who_update = db.Column(db.Integer, db.ForeignKey(User.id))
+
+    def have_shows_per_day_by_device(self, device_id):
+        now_date = datetime.datetime.utcnow()
+        d1 = now_date.replace(hour=0, minute=0, second=0)
+        d2 = now_date.replace(hour=23, minute=59, second=59)
+        view_count = AdvertiseViewed.query.filter_by(advertise_id=self.id, device_id=device_id).filter(
+            and_(AdvertiseViewed.date_viewed >= d1, AdvertiseViewed.date_viewed <= d2)).count()
+
+        return view_count < self.shows_per_day if self.shows_per_day else True
+
+    def have_shows_per_day(self):
+        now_date = datetime.datetime.utcnow()
+        d1 = now_date.replace(hour=0, minute=0, second=0)
+        d2 = now_date.replace(hour=23, minute=59, second=59)
+        view_count = AdvertiseViewed.query.filter_by(advertise_id=self.id).filter(
+            and_(AdvertiseViewed.date_viewed >= d1, AdvertiseViewed.date_viewed <= d2)).count()
+
+        return view_count < self.shows_per_day if self.shows_per_day else True
 
     @classmethod
     def get_ads_by_filename(cls, filename):
@@ -137,12 +156,13 @@ class Advertise(DateMixin, db.Model):
         return False
 
     @classmethod
-    def create(cls, *, title, group_id, path, filename, ext, time_start, time_end, user):
+    def create(cls, *, title, group_id, path, filename, shows_per_day, ext, time_start, time_end, user):
         advertise = cls(
             title=title,
             group_id=group_id,
             path=path,
             filename=filename,
+            shows_per_day=shows_per_day or 0,
             file_extension=ext,
             time_start=time_start,
             time_end=time_end or None,
@@ -152,10 +172,11 @@ class Advertise(DateMixin, db.Model):
         return advertise
 
     @classmethod
-    def update(cls, *, id, title, time_start, time_end, user):
+    def update(cls, *, id, title, shows_per_day, time_start, time_end, user):
         ads = Advertise.query.get(id)
         if ads:
             ads.title = title
+            ads.shows_per_day = shows_per_day or 0
             ads.time_start = time_start
             ads.time_end = time_end or None
             ads.who_update = user.id
@@ -171,10 +192,27 @@ class Advertise(DateMixin, db.Model):
             db.session.commit()
         return ads
 
+    def get_between_date(self, d1, d2):
+        return AdvertiseViewed.query.filter_by(advertise_id=self.id).filter(
+            and_(AdvertiseViewed.date_viewed >= d1, AdvertiseViewed.date_viewed <= d2))
+
+    def get_viewed_24h(self):
+        d2 = datetime.datetime.utcnow()
+        d1 = d2 - datetime.timedelta(days=1)
+
+        return self.get_between_date(d1, d2)
+
+    def get_viewed_7d(self):
+        d2 = datetime.datetime.utcnow()
+        d1 = d2 - datetime.timedelta(days=7)
+
+        return self.get_between_date(d1, d2)
+
 
 class AdvertiseViewed(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     advertise_id = db.Column(db.Integer, db.ForeignKey(Advertise.id))
+    advertise = db.relationship(Advertise, backref="viewed")
     date_viewed = db.Column(db.DateTime, default=datetime.datetime.utcnow, index=True)
     device_id = db.Column(db.String(200))
 

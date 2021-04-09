@@ -1,5 +1,5 @@
 from src.database import db
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, delete
 import datetime
 import hashlib
 from .utils import generate_string
@@ -63,7 +63,7 @@ class User(db.Model):
 class Sessions(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
-    user = db.relationship(User, cascade="all,delete", backref="sessions")
+    user = db.relationship(User, backref="sessions")
     device_id = db.Column(db.String(200))
     ip = db.Column(db.String(15))
     token = db.Column(db.String(200), nullable=False)
@@ -93,3 +93,13 @@ class Sessions(db.Model):
             sess.time_end = lifetime
             db.session.commit()
         return sess
+
+    @classmethod
+    def delete_token(cls, token):
+        sess = cls.query.filter_by(token=token).first()
+
+        if sess:
+            db.session.delete(sess)
+            db.session.commit()
+            return True
+        return False
