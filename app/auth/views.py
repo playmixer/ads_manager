@@ -38,5 +38,4 @@ def logout():
 @auth_app.route('/cabinet', methods=['GET'])
 @decorators.login_required
 def cabinet():
-    user = Auth.get_user()
     return render_template('auth/cabinet.html')

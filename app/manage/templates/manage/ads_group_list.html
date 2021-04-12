@@ -15,17 +15,15 @@
                 {% include 'components/breadcrumbs.html' %}
             {% endwith %}
             <div style="width: 100%; height: 300px; display: flex; flex:1; justify-content: flex-end">
-                {% with width=800, height=150, title_display=true, title_text='' %}
-                    {% include 'manage/chart/group_viewed_count_on_week.html' %}
-                {% endwith %}
+                {% include 'manage/chart/group_viewed_count_on_week.html' %}
             </div>
             <div class="row mb-5">
-                <div class="col-3">
+                <div class="col-6 col-md-3 col-sm-6">
                     {% with header='Показов за 24 часа', text=ads_viewed.get_viewed_24h().count() %}
                         {% include 'components/card.html' %}
                     {% endwith %}
                 </div>
-                <div class="col-3">
+                <div class="col-6 col-md-3 col-sm-6">
                     {% with header='Показов за неделю', text=ads_viewed.get_viewed_7d().count() %}
                         {% include 'components/card.html' %}
                     {% endwith %}

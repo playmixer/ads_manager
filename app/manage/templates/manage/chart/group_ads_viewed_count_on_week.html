@@ -1,40 +1,24 @@
-<canvas id="line-chart" width="{{ width }}" height="{{ height }}"></canvas>
-
-<script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
-<script>
-    const chartColors = [
-        "rgba(255, 99, 132, 1)",
-        "rgba(54, 162, 235, 1)",
-        'rgba(255, 206, 86, 1)',
-        'rgba(75, 192, 192, 1)',
-        'rgba(153, 102, 255, 1)',
-        'rgba(255, 159, 64, 1)',
-    ]
-    const labels = [{% for d in list(range(7))[::-1] %}"{{ utcnow(-d)|datetime('%D') }}", {% endfor %}]
-    const datasets = [
-        {% for ads_item in ads_list %}
-        {
-            data: [{% for d in list(range(7))[::-1] %} {{ ads_item.get_count_shows_per_day(utcnow(-d)).count() }}, {% endfor %}],
-            label: "{{ ads_item.title }}",
-            borderColor: chartColors[{{ loop.index }}],
-            fill: false
-
-        },
+<div style="width: 100%; height: 300px; display: flex; flex:1; justify-content: flex-end">
+    {% set label=[] %}
+    {% for d in list(range(7))[::-1] %}
+        <!--{{ label.append(utcnow(-d)|datetime('%D')) }}-->
+    {% endfor %}
+    {% set datas=[] %}
+    {% for ads_item in ads_list %}
+        {% set data = [] %}
+        {% for d in list(range(7))[::-1] %}
+            <!--{{ data.append(ads_item.get_count_shows_per_day(utcnow(-d)).count()) }}-->
         {% endfor %}
-    ]
-
-
-    new Chart(document.getElementById("line-chart"), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: datasets
-        },
-        options: {
-            title: {
-                display: false,
-                text: ''
-            }
-        }
-    });
-</script>
+        <!--{{ datas.append({
+                'data': data,
+                'title': ads_item.title,
+                'index': loop.index
+            })
+         }}-->
+    {% endfor %}
+    {% with chart_name='chart-ads', width=800, height=150, title_display=true, title_text='',
+        label_x=label, datas=datas
+    %}
+        {% include 'components/chart/line.html' %}
+    {% endwith %}
+</div>

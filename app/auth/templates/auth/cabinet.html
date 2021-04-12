@@ -13,7 +13,7 @@
         {% set user = auth.get_user() %}
         <h5>Персональный токен</h5>
         <div class="d-flex flex-row ">
-            <input type="text" class="form-control" id="personalToken" name="personalToken" value="{{ user.personal_token or '' }}" readonly>
+            <input type="text" class="form-control" style="margin-right: 5px" id="personalToken" name="personalToken" value="{{ user.personal_token or '' }}" readonly>
             <button class="btn btn-primary" onclick="copyToken()">Копировать</button>
         </div>
 
