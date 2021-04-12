@@ -33,6 +33,7 @@ class GroupAdvertise(DateMixin, db.Model):
 
     class Filters:
         actual = 0
+        enabled = 1
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(200), nullable=False)
@@ -41,6 +42,31 @@ class GroupAdvertise(DateMixin, db.Model):
     status = db.Column(db.Enum(StatusType), default=StatusType.disabled, nullable=False)
     time_delete = db.Column(db.DATETIME)
     who_update = db.Column(db.Integer, db.ForeignKey(User.id))
+
+    def get_count_shows_per_day(self, day: datetime.datetime):
+        ads_list = self.advertises
+        count = 0
+        for ads in ads_list:
+            count += ads.get_count_shows_per_day(day).count()
+
+        return count
+
+    def get_between_date(self, d1, d2):
+        ads_viewed_list = AdvertiseViewed.get_between_date(d1, d2).all()
+        ads_viewed_filtered = list(filter(lambda x: x.advertise.group_id == self.id, ads_viewed_list))
+        return ads_viewed_filtered
+
+    def get_viewed_24h(self):
+        d2 = datetime.datetime.utcnow()
+        d1 = d2 - datetime.timedelta(days=1)
+
+        return self.get_between_date(d1, d2)
+
+    def get_viewed_7d(self):
+        d2 = datetime.datetime.utcnow()
+        d1 = d2 - datetime.timedelta(days=7)
+
+        return self.get_between_date(d1, d2)
 
     @classmethod
     def create(cls, title: str, user: User):
@@ -72,7 +98,9 @@ class GroupAdvertise(DateMixin, db.Model):
     def get_group_list(cls, filters: List[int] = []):
         group_list = GroupAdvertise.query
         if cls.Filters.actual in filters:
-            group_list = group_list.filter_by(time_delete=None, status=cls.StatusType.enabled)
+            group_list = group_list.filter_by(time_delete=None)
+        if cls.Filters.enabled in filters:
+            group_list = group_list.filter_by(status=cls.StatusType.enabled)
         return group_list
 
     @classmethod
@@ -93,6 +121,7 @@ class Advertise(DateMixin, db.Model):
     filename = db.Column(db.String(200), unique=True, nullable=False)
     file_extension = db.Column(db.String(20))
     group_id = db.Column(db.Integer, db.ForeignKey(GroupAdvertise.id), nullable=False)
+    group = db.relationship(GroupAdvertise, backref="advertises")
     path = db.Column(db.String(200), unique=True, nullable=False)
     time_start = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.utcnow)
     shows_per_day = db.Column(db.Integer, default=0)
@@ -118,6 +147,11 @@ class Advertise(DateMixin, db.Model):
             and_(AdvertiseViewed.date_viewed >= d1, AdvertiseViewed.date_viewed <= d2)).count()
 
         return view_count < self.shows_per_day if self.shows_per_day else True
+
+    def get_count_shows_per_day(self, day: datetime.datetime):
+        d1 = day.replace(hour=0, minute=0, second=0)
+        d2 = day.replace(hour=23, minute=59, second=59)
+        return AdvertiseViewed.get_between_date(d1, d2).filter_by(advertise_id=self.id)
 
     @classmethod
     def get_ads_by_filename(cls, filename):

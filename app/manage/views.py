@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, flash, request, redirect, url_for, make_response, send_file
 from .forms import *
-from app.auth import Auth, decorators
+from app.auth import decorators
+from app.auth.auth import Auth
 from app.manage.models import GroupAdvertise, Advertise, AdvertiseViewed, db
 from src import exceptions
 from src.logger import logger
@@ -32,8 +33,26 @@ def ads_groups():
             group_title = request.form.get('title')
             GroupAdvertise.create(group_title, user)
 
-        adv_group_list = GroupAdvertise.get_group_list(filters=[GroupAdvertise.Filters.actual]).filter_by(user_id=user.id)
-        return render_template('manage/ads_group_list.html', form=form, group_list=adv_group_list, ads_viewed=AdvertiseViewed)
+        adv_group_list = GroupAdvertise.get_group_list(filters=[GroupAdvertise.Filters.actual]).filter_by(
+            user_id=user.id)
+        return render_template('manage/ads_group_list.html', form=form, group_list=adv_group_list,
+                               ads_viewed=AdvertiseViewed)
+    except Exception as err:
+        return str(err)
+
+
+@manage_app.route('/adsGroup/<group_id>', methods=['GET', 'POST'])
+@decorators.login_required
+def ads_group(group_id):
+    try:
+        user = Auth.get_user()
+        group = GroupAdvertise.get_group(group_id).filter_by(user_id=user.id).first()
+
+        if not group:
+            raise Exception('Advertise group not found')
+        ads_list = Advertise.get_ads_list_by_group(group_id, [Advertise.Filters.actual])
+
+        return render_template('manage/ads_group.html', ads_list=ads_list, ads_group=group)
     except Exception as err:
         return str(err)
 
@@ -70,7 +89,7 @@ def ads_group_edit(group_id):
 def ads_group_delete(group_id):
     try:
         user = Auth.get_user()
-        group = GroupAdvertise.get_group(group_id, user).all()
+        group = GroupAdvertise.get_group(group_id).filter_by(user_id=user.id).first()
         if not group:
             raise Exception('Advertise group not found')
 
@@ -80,22 +99,6 @@ def ads_group_delete(group_id):
             return redirect(url_for('.ads_groups'))
 
         return render_template('manage/ads_group_delete.html', form=form_yes, ads_group=group)
-    except Exception as err:
-        return str(err)
-
-
-@manage_app.route('/adsGroup/<group_id>', methods=['GET', 'POST'])
-@decorators.login_required
-def ads_group(group_id):
-    try:
-        user = Auth.get_user()
-        group = GroupAdvertise.get_group(group_id).filter_by(user_id=user.id).first()
-
-        if not group:
-            raise Exception('Advertise group not found')
-        ads_list = Advertise.get_ads_list_by_group(group_id, [Advertise.Filters.actual])
-
-        return render_template('manage/ads_group.html', ads_list=ads_list, ads_group=group)
     except Exception as err:
         return str(err)
 
@@ -231,4 +234,3 @@ def get_clip(filename: str):
     except Exception as err:
         logger.error('get_clip filename=' + filename + '\n\t' + str(err))
         return str(err), 500
-

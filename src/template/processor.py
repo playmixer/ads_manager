@@ -1,4 +1,9 @@
-from app.auth import Auth
+from app.auth.auth import Auth
+from datetime import datetime, timedelta
+
+
+def utcnow(d: int = 0):
+    return datetime.utcnow() + timedelta(days=d)
 
 
 def init_app(app):
@@ -8,5 +13,7 @@ def init_app(app):
 
         return dict(
             auth=Auth,
-            file_is_exists=file_exists
+            file_is_exists=file_exists,
+            utcnow=utcnow,
+            list=list
         )

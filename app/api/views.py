@@ -14,7 +14,7 @@ api_app = Blueprint(
 )
 
 
-def render_json(*, result=True, data=None, message=None):
+def render_json(*, result=True, data=None, message=None, status=200):
     res = {
         'Result': 'Ok' if result else 'Fail'
     }
@@ -23,7 +23,7 @@ def render_json(*, result=True, data=None, message=None):
     if message:
         res['Message'] = message
 
-    return jsonify(res)
+    return jsonify(res), 200
 
 
 @api_app.route('/')
@@ -38,7 +38,8 @@ def get_groups():
         payload = Auth.get_jwt_payload()
         user_id = payload.get('user_id')
 
-        groups = GroupAdvertise.get_group_list([GroupAdvertise.Filters.actual]).filter_by(user_id=user_id)
+        groups = GroupAdvertise.get_group_list(
+            [GroupAdvertise.Filters.actual, GroupAdvertise.Filters.enabled]).filter_by(user_id=user_id)
         parsed_groups = types.TypeGroupsAdvertise.parse_obj(groups.all())
 
         return render_json(result=True, data=parsed_groups.dict()["__root__"])
@@ -63,6 +64,7 @@ def get_ads_group():
             # raise Exception('Advertise not found')
             return render_json(result=True, data=[])
         ads_filtered = list(filter(lambda x: x.have_shows_per_day_by_device(device_id), ads.all()))
+        ads_filtered = list(filter(lambda x: x.have_shows_per_day(), ads_filtered))
         parsed_ads = types.TypeAdvertiseList.from_orm(ads_filtered)
         return render_json(result=True, data=parsed_ads.dict()['__root__'])
 

@@ -1,4 +1,4 @@
-from . import Auth
+from .auth import Auth
 from flask import redirect, url_for, request
 from functools import wraps
 import base64

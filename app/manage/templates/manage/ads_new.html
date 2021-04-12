@@ -6,6 +6,13 @@
     {% with title='Добавить рекламу' %}
         {% include 'components/label_of_page.html' %}
     {% endwith %}
+    {% with crumbs=[
+        {'url': url_for('manage.index'), 'title': 'Главная страница'},
+        {'url': url_for('manage.ads_group', group_id=ads_group.id), 'title': ads_group.title},
+        {'url': '', 'title': 'Добавить рекламу'}
+    ] %}
+        {% include 'components/breadcrumbs.html' %}
+    {% endwith %}
     {% include 'components/messages_of_error.html' %}
     <form action="{{ url_for('manage.ads_new', group_id=ads_group.id) }}" method="POST" enctype="multipart/form-data">
         {{ form.csrf_token }}

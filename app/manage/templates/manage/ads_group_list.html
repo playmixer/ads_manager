@@ -9,19 +9,24 @@
                 {% include 'components/label_of_page.html' %}
             {% endwith %}
             {% with crumbs=[
-                {'url': url_for('manage.index'),
-                'title': 'Главная страница'}
+                {'url': url_for('manage.index'), 'title': 'Главная страница'},
+                {'url': url_for('manage.index'), 'title': 'Реклама'}
             ] %}
                 {% include 'components/breadcrumbs.html' %}
             {% endwith %}
+            <div style="width: 100%; height: 300px; display: flex; flex:1; justify-content: flex-end">
+                {% with width=800, height=150, title_display=true, title_text='' %}
+                    {% include 'manage/chart/group_viewed_count_on_week.html' %}
+                {% endwith %}
+            </div>
             <div class="row mb-5">
                 <div class="col-3">
-                    {% with header='Просмотров за день', text=ads_viewed.get_viewed_24h().count() %}
+                    {% with header='Показов за 24 часа', text=ads_viewed.get_viewed_24h().count() %}
                         {% include 'components/card.html' %}
                     {% endwith %}
                 </div>
                 <div class="col-3">
-                    {% with header='Просмотров за неделю', text=ads_viewed.get_viewed_7d().count() %}
+                    {% with header='Показов за неделю', text=ads_viewed.get_viewed_7d().count() %}
                         {% include 'components/card.html' %}
                     {% endwith %}
                 </div>
@@ -30,9 +35,11 @@
                 <thead>
                 <tr>
                     <th scope="col">#</th>
-                    <th scope="col" width="50%">Название</th>
+                    <th scope="col">Название</th>
                     <th scope="col">Статус</th>
                     <th scope="col">Дата создания</th>
+                    <th scope="col">За 24 ч.</th>
+                    <th scope="col">За неделю</th>
                     <th width="10%"></th>
                 </tr>
                 </thead>
@@ -49,6 +56,8 @@
                                 class="{% if group.status.id == 0 %}text-danger{% else %}text-success{% endif %}">{{ group.status.title }}</span>
                         </td>
                         <td>{{ group.time_created|datetime('%d.%m.%Y') }}</td>
+                        <td>{{ group.get_viewed_24h()|length }}</td>
+                        <td>{{ group.get_viewed_7d()|length }}</td>
                         <td>
                             <a href="{{ url_for('manage.ads_group', group_id=group.id) }}" class="link-secondary">
                                 перейти

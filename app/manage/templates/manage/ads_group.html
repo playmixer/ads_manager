@@ -9,6 +9,11 @@
     {% with crumbs=[{'url': url_for('manage.index'), 'title': 'Главная страница'},{'url': '', 'title': ads_group.title},] %}
         {% include 'components/breadcrumbs.html' %}
     {% endwith %}
+    <div style="width: 100%; height: 300px; display: flex; flex:1; justify-content: flex-end">
+        {% with width=800, height=150, title_display=true, title_text='' %}
+            {% include 'manage/chart/group_ads_viewed_count_on_week.html' %}
+        {% endwith %}
+    </div>
     <div style="display: flex; justify-content: space-between">
         <div class="mb-2">
             <a href="{{ url_for('manage.ads_group_edit', group_id=ads_group.id) }}" class="btn btn-outline-primary">Редактировать</a>

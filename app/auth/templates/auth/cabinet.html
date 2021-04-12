@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+    {% with title='Личный кабинет' %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+    {% with crumbs=[
+        {'url': url_for('manage.index'), 'title': 'Главная страница'},
+        {'url': '', 'title': 'Личный кабинет'}
+    ] %}
+        {% include 'components/breadcrumbs.html' %}
+        {% set user = auth.get_user() %}
+        <h5>Персональный токен</h5>
+        <div class="d-flex flex-row ">
+            <input type="text" class="form-control" id="personalToken" name="personalToken" value="{{ user.personal_token or '' }}" readonly>
+            <button class="btn btn-primary" onclick="copyToken()">Копировать</button>
+        </div>
+
+    {% endwith %}
+    <script>
+        const copyToken = () => {
+            const inputToken = document.getElementById("personalToken");
+            inputToken.select();
+            document.execCommand("copy");
+        }
+    </script>
+
+{% endblock %}

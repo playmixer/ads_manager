@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from .forms import *
-from app.auth.auth import Auth
+from .auth import Auth
+from . import decorators
 
 __all__ = ['auth_app']
 
@@ -32,3 +33,10 @@ def logout():
     auth = Auth()
     auth.logout()
     return redirect(url_for('auth.login'))
+
+
+@auth_app.route('/cabinet', methods=['GET'])
+@decorators.login_required
+def cabinet():
+    user = Auth.get_user()
+    return render_template('auth/cabinet.html')

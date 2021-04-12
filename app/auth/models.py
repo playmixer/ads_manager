@@ -12,6 +12,7 @@ class User(db.Model):
     username = db.Column(db.String(200), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
     salt = db.Column(db.String(200), nullable=False, default='')
+    personal_token = db.Column(db.String(200), default=lambda x: generate_string(50))
     time_created = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.utcnow)
     time_updated = db.Column(db.DATETIME, onupdate=datetime.datetime.utcnow)
 
@@ -20,6 +21,13 @@ class User(db.Model):
         u = cls.query.filter_by(username=username).first()
         if u:
             return u if u.password_matches(password) else False
+        return False
+
+    @classmethod
+    def check_personal_token(cls, token):
+        u = cls.query.filter_by(personal_token=token).first()
+        if u:
+            return u
         return False
 
     def password_matches(self, password: str):

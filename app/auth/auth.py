@@ -17,6 +17,11 @@ class Auth:
         return Sessions.delete_token(token)
 
     @classmethod
+    def login_m_token(cls, token: str):
+        user = User.check_personal_token(token)
+        return user
+
+    @classmethod
     def registration(cls, username, password):
         return User.registration(username, password)
 
