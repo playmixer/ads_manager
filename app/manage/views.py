@@ -216,8 +216,7 @@ def get_clip(filename: str):
 
         path = os.path.join(UPLOAD_FOLDER, ads.path)
 
-        response = make_response(send_file(path, attachment_filename="video.mp4", conditional=True))
-        response.headers['Content-Type'] = 'video/mp4'
+        response = make_response(send_file(path, conditional=True))
 
         if response.status_code == 200:
             token = get_token_from_header()
