@@ -4,6 +4,7 @@ import datetime
 import enum
 from typing import List
 from app.auth.models import User
+import os
 
 __all__ = ['User', 'GroupAdvertise', 'Advertise', 'AdvertiseViewed']
 
@@ -129,6 +130,15 @@ class Advertise(DateMixin, db.Model):
     time_delete = db.Column(db.DATETIME)
     who_create = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
     who_update = db.Column(db.Integer, db.ForeignKey(User.id))
+
+    def get_path(self):
+        path_split = self.path.split('\\')
+        if len(path_split) <= 1:
+            path_split = self.path.split('/')
+
+        path = os.path.join(*path_split)
+
+        return path
 
     def have_shows_per_day_by_device(self, device_id):
         now_date = datetime.datetime.utcnow()

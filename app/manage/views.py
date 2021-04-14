@@ -17,6 +17,14 @@ manage_app = Blueprint(
 )
 
 
+@manage_app.route('/test', methods=['GET', 'POST'])
+@decorators.login_required
+def test():
+    ads = Advertise.query.get(35)
+    print(ads.get_path())
+    return '123'
+
+
 @manage_app.route('/', methods=['GET', 'POST'])
 @decorators.login_required
 def index():
@@ -214,7 +222,7 @@ def get_clip(filename: str):
         if not file_exists(ads.path):
             raise exceptions.FileNotFound('File not found')
 
-        path = os.path.join(UPLOAD_FOLDER, ads.path)
+        path = os.path.join(UPLOAD_FOLDER, ads.get_path())
 
         response = make_response(send_file(path, conditional=True))
 
