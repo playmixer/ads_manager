@@ -1,12 +1,19 @@
 from flask import Flask
 from src.database import db
 from src.template import processor, filters
+import config
+
 
 # from src.models import *
 
 
 def create_app():
-    app = Flask(__name__)
+    subdirectory = config.SUBDIRECTORY
+
+    app = Flask(
+        __name__,
+        static_url_path='/'.join([subdirectory, 'static'])
+    )
     app.config.from_pyfile('config.py')
 
     db.init_app(app)
@@ -17,10 +24,12 @@ def create_app():
     from app.api import api_app, api_app_auth
     from app.auth import auth_app
 
-    app.register_blueprint(manage_app, url_prefix='/')
-    app.register_blueprint(auth_app, url_prefix='/auth')
-    app.register_blueprint(api_app, url_prefix='/api/v0')
-    app.register_blueprint(api_app_auth, url_prefix='/api/v0/auth')
+    subdirectory = config.SUBDIRECTORY
+
+    app.register_blueprint(manage_app, url_prefix=subdirectory + '/')
+    app.register_blueprint(auth_app, url_prefix=subdirectory + '/auth')
+    app.register_blueprint(api_app, url_prefix=subdirectory + '/api/v0')
+    app.register_blueprint(api_app_auth, url_prefix=subdirectory + '/api/v0/auth')
 
     return app
 

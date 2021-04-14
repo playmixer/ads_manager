@@ -13,6 +13,7 @@ HOST = '127.0.0.1'
 PORT = '8000'
 WORKERS = 3
 WORKER_TIMEOUT = 30
+SUBDIRECTORY = '/advertise'
 
 # Flask
 SQLALCHEMY_DATABASE_URI = f'mysql://{sql_user}:{sql_pass}@localhost/advertise'
