@@ -53,7 +53,7 @@
                 <td>{{ ads_item.get_viewed_24h().count() }}</td>
                 <td>{{ ads_item.get_viewed_7d().count() }}</td>
                 <td>
-                    {% set exists = file_is_exists(ads_item.path) %}
+                    {% set exists = file_is_exists(ads_item.get_path()) %}
                     {% if exists %}
                         <span class="text-success">Ок</span>
                     {% else %}
