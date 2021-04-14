@@ -219,7 +219,7 @@ def get_clip(filename: str):
         if not ads:
             raise exceptions.AdvertiseNotFound('Advertise not found')
 
-        if not file_exists(ads.path):
+        if not file_exists(ads.get_path()):
             raise exceptions.FileNotFound('File not found')
 
         path = os.path.join(UPLOAD_FOLDER, ads.get_path())
