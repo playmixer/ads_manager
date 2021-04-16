@@ -44,6 +44,10 @@ class GroupAdvertise(DateMixin, db.Model):
     time_delete = db.Column(db.DATETIME)
     who_update = db.Column(db.Integer, db.ForeignKey(User.id))
 
+    def get_user(self):
+        user = User.query.get(self.user_id)
+        return user
+
     def get_count_shows_per_day(self, day: datetime.datetime):
         ads_list = self.advertises
         count = 0

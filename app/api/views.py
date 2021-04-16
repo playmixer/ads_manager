@@ -75,7 +75,8 @@ def get_ads_group():
 
 @api_app.route('/adsViewed/<filename>')
 def clip_viewed(filename):
-    view = AdvertiseViewed.viewed(filename)
+    device_id = request.args.get('device_id') or ''
+    view = AdvertiseViewed.viewed(filename, device_id)
     if view:
         return render_json(result=True)
 

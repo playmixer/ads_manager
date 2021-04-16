@@ -20,8 +20,8 @@ manage_app = Blueprint(
 @manage_app.route('/test', methods=['GET', 'POST'])
 @decorators.login_required
 def test():
-    ads = Advertise.query.get(35)
-    print(ads.get_path())
+    print(Auth.find_role(role_str='admin'))
+
     return '123'
 
 
@@ -209,7 +209,7 @@ def ads_delete(group_id, ads_id):
 
 
 @manage_app.route('/getClip/<filename>')
-@decorators.authenticated_required
+# @decorators.authenticated_required
 def get_clip(filename: str):
     from src.utils import file_exists
     from flask import current_app

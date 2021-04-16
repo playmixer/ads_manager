@@ -1,0 +1,55 @@
+{% extends 'admin/admin.html' %}
+
+{% block title %}azs{% endblock %}
+{% block css %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dataTables.css') }}">
+{% endblock %}
+
+{% block content %}
+    {% with title='Список АЗС' %}
+    {% include 'components/label_of_page.html' %}
+    {% endwith %}
+    <table class="table table-hover" id="table_azs">
+        <thead>
+        <tr>
+            <th>name</th>
+            <th>num</th>
+            <th>lat</th>
+            <th>lon</th>
+            <th>ip</th>
+            <th>token</th>
+            <th>status</th>
+            <th>ts_create</th>
+            <th>ts_update</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for azs in azs_list %}
+            <tr>
+                <td>{{ azs.name }}</td>
+                <td>{{ azs.num }}</td>
+                <td>{{ azs.lat }}</td>
+                <td>{{ azs.lon }}</td>
+                <td>{{ azs.ip }}</td>
+                <td>{{ azs.token }}</td>
+                <td>{{ azs.status }}</td>
+                <td>{{ azs.ts_create|datetime('%d.%m.%Y %H:%M:%S') }}</td>
+                <td>{{ azs.ts_update|datetime('%d.%m.%Y %H:%M:%S') }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+
+{% block script %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.dataTables.js') }}"></script>
+    <script>
+        $(document).ready( function () {
+            $('#table_azs').DataTable();
+        });
+    </script>
+{% endblock %}

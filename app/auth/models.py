@@ -3,8 +3,12 @@ from sqlalchemy import and_, or_, delete
 import datetime
 import hashlib
 from .utils import generate_string
+import enum
 
-__all__ = ['User', 'Sessions', 'db']
+user_role_table = db.Table('user_role', db.metadata,
+                           db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+                           db.Column('role_id', db.Integer, db.ForeignKey('role.id'))
+                           )
 
 
 class User(db.Model):
@@ -13,6 +17,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(200), nullable=False)
     salt = db.Column(db.String(200), nullable=False, default='')
     personal_token = db.Column(db.String(200), default=lambda x: generate_string(50))
+    roles = db.relationship('Role', secondary=user_role_table)
     time_created = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.utcnow)
     time_updated = db.Column(db.DATETIME, onupdate=datetime.datetime.utcnow)
 
@@ -67,6 +72,12 @@ class User(db.Model):
         self.salt = self.gen_salt()
         db.session.commit()
 
+    def add_role(self, role):
+        self.roles.append(role)
+        db.session.add(self)
+        db.session.commit()
+        return self
+
 
 class Sessions(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -111,3 +122,65 @@ class Sessions(db.Model):
             db.session.commit()
             return True
         return False
+
+
+class Role(db.Model):
+    class TypeRole(enum.Enum):
+        admin = 'admin'
+
+        @classmethod
+        def get_all_role(cls):
+            attrs = dir(cls)
+            filtered = list(filter(lambda x: not x.startswith('__'), attrs))
+            return filtered
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.Enum(TypeRole), nullable=False, unique=True)
+    date_create = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.utcnow)
+
+    @classmethod
+    def create_roles(cls):
+        roles = cls.TypeRole.get_all_role()
+        for role in roles:
+            r = cls.query.filter_by(title=role).first()
+            if not r:
+                new_role = cls(title=role)
+                db.session.add(new_role)
+                db.session.commit()
+
+        return True
+
+    @classmethod
+    def get_role(cls, role: TypeRole):
+        role = cls.query.filter_by(title=role).first()
+        return role
+
+# class UserRole(db.Model):
+#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
+#     user = db.relationship(User, backref="roles")
+#     role_id = db.Column(db.Integer, db.ForeignKey(Role.id))
+#     role = db.relationship(Role, backref="users")
+#     date_create = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.utcnow)
+#
+#     @classmethod
+#     def create(cls, user: User, role: Role):
+#         user_role = cls(user_id=user.id, role_id=role.id)
+#         db.session.add(user_role)
+#         db.session.commit()
+#
+# class Access(db.Model):
+#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#     title = db.Column(db.String(200), nullable=False)
+#     role_id = db.Column(db.Integer, db.ForeignKey("AccessRole.id"))
+#     role = db.relationship("AccessRole", backref="accesses")
+#     date_create = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.utcnow)
+#
+#
+# class AccessRole(db.Model):
+#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#     role_id = db.Column(db.Integer, db.ForeignKey(UserRole.id), nullable=False)
+#     role = db.relationship(UserRole, backref="accesses")
+#     access_id = db.Column(db.Integer, db.ForeignKey(Access.id), nullable=False)
+#     access = db.relationship(Access, backref="roles")
+#     date_create = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.utcnow)

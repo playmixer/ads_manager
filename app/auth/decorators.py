@@ -7,6 +7,21 @@ import datetime
 from src.logger import logger
 
 
+def role_required(role: str):
+    def wrapper(f):
+        @wraps(f)
+        def wrap(*args, **kwargs):
+            find_role = Auth.find_role(role_str=role)
+            if find_role:
+                return f(*args, **kwargs)
+
+            return 'No access'
+
+        return wrap
+
+    return wrapper
+
+
 def login_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):

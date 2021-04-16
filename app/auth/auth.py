@@ -1,9 +1,10 @@
 from flask import session, current_app
-from .models import User, Sessions, db
+from .models import User, Sessions, db, Role
 from .utils import generate_string, encrypt_sha256, decrypt_sha256, get_token_from_header
 import json
 import base64
 import datetime
+from typing import List
 
 
 class Auth:
@@ -113,3 +114,16 @@ class Auth:
         jwt_decode = base64.b64decode(b64_payload)
         payload = json.loads(jwt_decode)
         return payload
+
+    @classmethod
+    def find_role(cls, *, roles: List[Role] = None, role_str: str = None):
+        user = cls.get_user()
+        roles_filtered = None
+        if roles:
+            roles_filtered = list(filter(lambda x: x in roles, user.roles))
+
+        if role_str:
+            role = Role.query.filter_by(title=role_str).first()
+            if role:
+                roles_filtered = list(filter(lambda x: x == role, user.roles))
+        return roles_filtered

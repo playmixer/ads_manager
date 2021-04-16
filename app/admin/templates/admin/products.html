@@ -1,0 +1,53 @@
+{% extends 'admin/admin.html' %}
+
+{% block title %}products{% endblock %}
+{% block css %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dataTables.css') }}">
+{% endblock %}
+
+{% block content %}
+    {% with title='Список продуктов' %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+    <table class="table table-hover" id="table_product">
+        <thead>
+        <tr>
+            <th>name</th>
+            <th>code</th>
+            <th>date_begin</th>
+            <th>date_end</th>
+            <th>max_count</th>
+            <th>max_count_per_azs</th>
+            <th>bar_code</th>
+            <th>enabled</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for product in product_list %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.code }}</td>
+                <td>{{ product.date_begin|datetime('%d.%m.%Y %H:%M:%S') }}</td>
+                <td>{{ product.date_end|datetime('%d.%m.%Y %H:%M:%S') }}</td>
+                <td>{{ product.max_count }}</td>
+                <td>{{ product.max_count_per_azs }}</td>
+                <td>{{ product.bar_code }}</td>
+                <td>{{ product.enabled }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+
+{% block script %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.dataTables.js') }}"></script>
+    <script>
+        $(document).ready( function () {
+            $('#table_product').DataTable();
+        });
+    </script>
+{% endblock %}

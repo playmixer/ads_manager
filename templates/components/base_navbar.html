@@ -13,7 +13,10 @@
                 </li>
             </ul>
 
-            <a class="nav-link link-dark" href="{{ url_for('auth.cabinet') }}"><span style="margin-right: 5px">{{ auth.get_username() }}</span></a>
+            {% if auth.find_role(role_str='admin') %}
+                <a class="nav-link link-danger" href="{{ url_for('admin.index') }}">Админка</a>
+            {% endif %}
+            <a class="nav-link link-dark" href="{{ url_for('auth.cabinet') }}"><span style="margin-right: 5px">{{ auth.get_username() }}</span>
             <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary d-flex">Выход</a>
         </div>
     </div>
