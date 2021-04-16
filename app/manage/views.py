@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, flash, request, redirect, url_for, make_response, send_file
+from flask import Blueprint, render_template, flash, request, redirect, url_for, make_response, send_file, send_from_directory
 from .forms import *
 from app.auth import decorators
 from app.auth.auth import Auth
@@ -226,13 +226,13 @@ def get_clip(filename: str):
 
         response = make_response(send_file(path, conditional=True))
 
-        if response.status_code == 200:
-            token = get_token_from_header()
-            if token:
-                payload = Auth.get_jwt_payload(token)
-                device_id = payload['device_id']
-
-                AdvertiseViewed.viewed(filename, device_id)
+        # if response.status_code == 200:
+        #     token = get_token_from_header()
+        #     if token:
+        #         payload = Auth.get_jwt_payload(token)
+        #         device_id = payload['device_id']
+        #
+        #         AdvertiseViewed.viewed(filename, device_id)
 
         return response
 
@@ -241,3 +241,30 @@ def get_clip(filename: str):
     except Exception as err:
         logger.error('get_clip filename=' + filename + '\n\t' + str(err))
         return str(err), 500
+
+
+@manage_app.route('/getFile/<filename>')
+# @decorators.authenticated_required
+def get_file(filename: str):
+    from src.utils import file_exists
+    from flask import current_app
+    # try:
+    UPLOAD_FOLDER = current_app.config['UPLOAD_FOLDER']
+    ads = Advertise.get_ads_by_filename(filename)
+    if not ads:
+        raise exceptions.AdvertiseNotFound('Advertise not found')
+
+    if not file_exists(ads.get_path()):
+        raise exceptions.FileNotFound('File not found')
+
+    path_with_out_file = os.path.dirname(ads.get_path())
+    filename = os.path.basename(ads.get_path())
+    path = os.path.join(UPLOAD_FOLDER, path_with_out_file)
+
+    return send_from_directory(directory=path, filename=filename)
+
+    # except (exceptions.FileNotFound, exceptions.AdvertiseNotFound) as err:
+    #     return str(err), 404
+    # except Exception as err:
+    #     logger.error('get_clip filename=' + filename + '\n\t' + str(err))
+    #     return str(err), 500

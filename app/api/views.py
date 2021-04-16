@@ -4,6 +4,7 @@ from . import types
 from app.auth import decorators
 from src.logger import logger
 from app.auth.auth import Auth
+from app.auth.utils import get_token_from_header
 
 __all__ = ['api_app', 'render_json']
 
@@ -74,8 +75,13 @@ def get_ads_group():
 
 
 @api_app.route('/adsViewed/<filename>')
+@decorators.authenticated_required
 def clip_viewed(filename):
-    device_id = request.args.get('device_id') or ''
+    token = get_token_from_header()
+    if token:
+        payload = Auth.get_jwt_payload(token)
+        device_id = payload['device_id']
+
     view = AdvertiseViewed.viewed(filename, device_id)
     if view:
         return render_json(result=True)
