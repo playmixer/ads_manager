@@ -14,7 +14,7 @@ def create_app():
         __name__,
         static_url_path='/'.join([subdirectory, 'static'])
     )
-    app.config.from_pyfile('config.py')
+    app.config.from_pyfile('config.flask.py')
 
     db.init_app(app)
     processor.init_app(app)
@@ -23,6 +23,7 @@ def create_app():
     from app.manage import manage_app
     from app.api import api_app, api_app_auth
     from app.auth import auth_app
+    from app.admin import admin
 
     subdirectory = config.SUBDIRECTORY
 
@@ -30,6 +31,7 @@ def create_app():
     app.register_blueprint(auth_app, url_prefix=subdirectory + '/auth')
     app.register_blueprint(api_app, url_prefix=subdirectory + '/api/v0')
     app.register_blueprint(api_app_auth, url_prefix=subdirectory + '/api/v0/auth')
+    app.register_blueprint(admin, url_prefix=subdirectory + '/admin')
 
     return app
 
