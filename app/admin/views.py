@@ -62,19 +62,19 @@ order by ar.ts_create desc""")
     return render_template('admin/azs_request.html', azs_request=azs_request)
 
 
-@admin.route('/promo/promo_azs_product_statistic')
+@admin.route('/promo/azs_product_statistic')
 @decorators.login_required
 @decorators.role_required(role='admin')
 def promo_statistic_product():
     statistic_products = database.select(
-        """select distinct azs.name as azs_name, p.name as product_name,
-COUNT(p.name) over (partition by p.name) as count_products,
-COUNT(azs.name) over (partition by azs.name) as sum_products
-from azs
-join azs_request a on a.azs_id = azs.id
-join azs_product ap on ap.azs_request_id = a.id
-join products p on p.id = ap.product_id
-order by azs.name, p.name""")
+        """select a.name as azs_name, 
+p.name as product_name,
+count(*) as count_products
+from azs as a, products p,azs_request ar, azs_product ap
+where p.id = ap.product_id
+and ar.azs_id = a.id
+and ap.azs_request_id = ar.id
+group by a.name, p.name""")
     return render_template('admin/promo_statistic_products.html', statistic_products=statistic_products)
 
 
