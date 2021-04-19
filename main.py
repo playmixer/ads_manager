@@ -1,6 +1,7 @@
-from flask import Flask
+from flask import Flask, render_template
 from src.database import db
 from src.template import processor, filters
+from app.auth import decorators
 import config
 
 
@@ -32,6 +33,10 @@ def create_app():
     app.register_blueprint(api_app, url_prefix=subdirectory + '/api/v0')
     app.register_blueprint(api_app_auth, url_prefix=subdirectory + '/api/v0/auth')
     app.register_blueprint(admin, url_prefix=subdirectory + '/admin')
+
+    app.errorhandler(404)(
+        decorators.login_required(lambda x: render_template('404.html'))
+    )
 
     return app
 

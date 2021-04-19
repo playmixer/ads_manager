@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block title %}404 Page not found{% endblock %}
+
+{% block content %}
+    {% with title='404' %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+    Страница не найдена
+{% endblock %}
