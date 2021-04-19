@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, request
 from app.auth import decorators
 from .promo import database
+from .promo.models import session, Azs
 from app.manage.models import *
+from src.logger import logger
 
 admin = Blueprint(
     'admin',
@@ -21,8 +23,12 @@ def index():
 @decorators.role_required(role='admin')
 @decorators.login_required
 def promo_azs():
-    azs_list = database.select('select name, num, lat, lon, ip, token, status, ts_create, ts_update from azs')
-    return render_template('admin/azs.html', azs_list=azs_list)
+    try:
+        azs_list = database.select('select name, num, lat, lon, ip, token, status, ts_create, ts_update from azs')
+        return render_template('admin/azs.html', azs_list=azs_list)
+    except Exception as err:
+        logger.error(f'promo_azs \n\t{str(err)}')
+        return str(err)
 
 
 @admin.route('/promo/products')
