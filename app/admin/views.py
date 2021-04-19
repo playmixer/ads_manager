@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request
 from app.auth import decorators
 from .promo import database
-from .promo.models import session, Azs
 from app.manage.models import *
 from src.logger import logger
 
@@ -20,8 +19,8 @@ def index():
 
 
 @admin.route('/promo/azs')
-@decorators.role_required(role='admin')
 @decorators.login_required
+@decorators.role_required(role='admin')
 def promo_azs():
     try:
         azs_list = database.select('select name, num, lat, lon, ip, token, status, ts_create, ts_update from azs')
@@ -32,8 +31,8 @@ def promo_azs():
 
 
 @admin.route('/promo/products')
-@decorators.role_required(role='admin')
 @decorators.login_required
+@decorators.role_required(role='admin')
 def promo_products():
     product_list = database.select(
         'select name, code, date_begin, date_end, max_count, max_count_per_azs, bar_code, enabled from products')
@@ -41,8 +40,8 @@ def promo_products():
 
 
 @admin.route('/promo/azs_products')
-@decorators.role_required(role='admin')
 @decorators.login_required
+@decorators.role_required(role='admin')
 def promo_azs_product():
     azs_product_list = database.select(
         """select p.name as product_name, a.name as azs_name, a.status, ar.token, ar.ts_create, ar.ts_usage from azs_product ap
@@ -53,8 +52,8 @@ join azs a on ar.azs_id = a.id""")
 
 
 @admin.route('/promo/azs_request')
-@decorators.role_required(role='admin')
 @decorators.login_required
+@decorators.role_required(role='admin')
 def promo_azs_request():
     azs_request = database.select(
         """select ar.token, a.name, a.ip, ar.ts_create, ar.ts_usage from azs_request ar
@@ -64,16 +63,16 @@ order by ar.ts_create desc""")
 
 
 @admin.route('/manage/groups')
-@decorators.role_required(role='admin')
 @decorators.login_required
+@decorators.role_required(role='admin')
 def manage_ads_group():
     group_list = GroupAdvertise.query
     return render_template('admin/manage_group_list.html', group_list=group_list)
 
 
 @admin.route('/manage/advertise')
-@decorators.role_required(role='admin')
 @decorators.login_required
+@decorators.role_required(role='admin')
 def manage_advertise():
     advertises = Advertise.query
     group_id = request.args.get('group_id')
