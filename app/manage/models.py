@@ -57,8 +57,8 @@ class GroupAdvertise(DateMixin, db.Model):
         return count
 
     def get_between_date(self, d1, d2):
-        ads_viewed_list = AdvertiseViewed.get_between_date(d1, d2).all()
-        ads_viewed_filtered = list(filter(lambda x: x.advertise.group_id == self.id, ads_viewed_list))
+        ads_viewed_list = AdvertiseViewed.get_between_date(d1, d2)
+        ads_viewed_filtered = ads_viewed_list.filter(and_(GroupAdvertise.id == self.id))
         return ads_viewed_filtered
 
     def get_viewed_24h(self):
@@ -165,7 +165,7 @@ class Advertise(DateMixin, db.Model):
     def get_count_shows_per_day(self, day: datetime.datetime):
         d1 = day.replace(hour=0, minute=0, second=0)
         d2 = day.replace(hour=23, minute=59, second=59)
-        return AdvertiseViewed.get_between_date(d1, d2).filter_by(advertise_id=self.id)
+        return AdvertiseViewed.get_between_date(d1, d2).filter(Advertise.id==self.id)
 
     @classmethod
     def get_ads_by_filename(cls, filename):
@@ -276,18 +276,25 @@ class AdvertiseViewed(db.Model):
 
     @classmethod
     def get_between_date(cls, d1, d2):
-        return cls.query.filter(and_(cls.date_viewed >= d1, cls.date_viewed <= d2))
+        return db.session.query(AdvertiseViewed).join(Advertise).join(GroupAdvertise).filter(
+            and_(AdvertiseViewed.date_viewed >= d1, AdvertiseViewed.date_viewed <= d2))
 
     @classmethod
-    def get_viewed_24h(cls):
+    def get_viewed_24h(cls, user: User = None):
         d2 = datetime.datetime.utcnow()
         d1 = d2 - datetime.timedelta(days=1)
 
-        return cls.get_between_date(d1, d2)
+        res = cls.get_between_date(d1, d2)
+        if user:
+            res = res.filter(and_(GroupAdvertise.user_id == user.id))
+        return res
 
     @classmethod
-    def get_viewed_7d(cls):
+    def get_viewed_7d(cls, user: User = None):
         d2 = datetime.datetime.utcnow()
         d1 = d2 - datetime.timedelta(days=7)
 
-        return cls.get_between_date(d1, d2)
+        res = cls.get_between_date(d1, d2)
+        if user:
+            res = res.filter(and_(GroupAdvertise.user_id == user.id))
+        return res
