@@ -1,0 +1,43 @@
+<div style="width: 100%; height: 300px; display: flex; flex:1; justify-content: flex-end">
+    {% set label=[] %}
+    {% for d in list(range(7))[::-1] %}
+        <!--{{ label.append(date_now(-d)|datetime('%D')) }}-->
+    {% endfor %}
+    {% set datas=[] %}
+
+    {% set data = [] %}
+    {% for d in list(range(7))[::-1] %}
+        {% set product=outlet.get_create_product(outlet.id, date_now(-d)).first() %}
+        {% if product %}
+            <!--{{ data.append(product[1]) }}-->
+        {% else %}
+            <!--{{ data.append(0) }}-->
+        {% endif %}
+    {% endfor %}
+    <!--{{ datas.append({
+        'data': data,
+        'title': 'Запросили код',
+        'index': 0,
+        })
+     }}-->
+
+    {% set data = [] %}
+    {% for d in list(range(7))[::-1] %}
+        {% set product=outlet.get_usage_product(outlet.id, date_now(-d)).first() %}
+        {% if product %}
+            <!--{{ data.append(product[1]) }}-->
+        {% else %}
+            <!--{{ data.append(0) }}-->
+        {% endif %}
+    {% endfor %}
+    <!--{{ datas.append({
+            'data': data,
+            'title': 'Получил подарок',
+            'index': 1,
+            })
+         }}-->
+    {% with chart_name='chart-outlet', width=800, height=150, title_display=true, title_text='',
+        label_x=label, datas=datas %}
+        {% include 'components/chart/bar.html' %}
+    {% endwith %}
+</div>

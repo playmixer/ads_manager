@@ -57,14 +57,12 @@ def get_ads_group():
         if not token:
             raise Exception('Token is missed')
 
-        payload = Auth.get_jwt_payload()
-        device_id = payload['device_id']
-
         ads = Advertise.get_ads_by_group_token(token)
         if not ads:
             # raise Exception('Advertise not found')
             return render_json(result=True, data=[])
-        ads_filtered = list(filter(lambda x: x.have_shows_per_day_by_device(device_id), ads.all()))
+
+        ads_filtered = list(filter(lambda x: x.have_shows_max(), ads.all()))
         ads_filtered = list(filter(lambda x: x.have_shows_per_day(), ads_filtered))
         parsed_ads = types.TypeAdvertiseList.from_orm(ads_filtered)
         return render_json(result=True, data=parsed_ads.dict()['__root__'])

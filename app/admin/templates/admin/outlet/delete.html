@@ -1,0 +1,14 @@
+{% extends 'admin/admin.html' %}
+
+{% block title %}Удалить{% endblock %}
+
+{% block content %}
+    {% with title='Удалить точку '+outlet.name+'?' %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+    <form action="{{ url_for('admin.promo_azs_delete', outlet_id=outlet.id) }}" method="POST">
+        {{ form.csrf_token }}
+        {{ form.submit_yes(class_='btn btn-primary') }}
+        <a href="{{ url_for('admin.promo_azs_edit', outlet_id=outlet.id) }}" class="btn btn-outline-danger">Отмена</a>
+    </form>
+{% endblock %}

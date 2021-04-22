@@ -1,13 +1,13 @@
 <div style="width: 100%; height: 300px; display: flex; flex:1; justify-content: flex-end">
     {% set label=[] %}
     {% for d in list(range(7))[::-1] %}
-        <!--{{ label.append(utcnow(-d)|datetime('%D')) }}-->
+        <!--{{ label.append(date_now(-d)|datetime('%D')) }}-->
     {% endfor %}
     {% set datas=[] %}
     {% for group in group_list %}
         {% set data = [] %}
         {% for d in list(range(7))[::-1] %}
-            <!--{{ data.append(group.get_count_shows_per_day(utcnow(-d))) }}-->
+            <!--{{ data.append(group.get_count_shows_per_day(date_now(-d))) }}-->
         {% endfor %}
         <!--{{ datas.append({
             'data': data,

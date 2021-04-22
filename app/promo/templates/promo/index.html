@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Промо{% endblock %}
+
+{% block content %}
+    {% with title='Промо' %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+    {% with crumbs=[
+        {'url': url_for('promo.index'), 'title': 'Главная страница'},
+        {'url': '', 'title': 'Промо'},
+    ] %}
+        {% include 'components/breadcrumbs.html' %}
+    {% endwith %}
+    <div>
+        <a href="{{ url_for('promo.outlet_list') }}" class="link-dark">Точки</a>
+        <a href="{{ url_for('promo.product_list') }}" class="link-dark">Продукты</a>
+    </div>
+{% endblock %}

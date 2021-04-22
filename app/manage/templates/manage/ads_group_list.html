@@ -38,7 +38,6 @@
                     <th scope="col">Дата создания</th>
                     <th scope="col">За 24 ч.</th>
                     <th scope="col">За неделю</th>
-                    <th width="10%"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -56,11 +55,6 @@
                         <td>{{ group.time_created|datetime('%d.%m.%Y') }}</td>
                         <td>{{ group.get_viewed_24h().count() }}</td>
                         <td>{{ group.get_viewed_7d().count() }}</td>
-                        <td>
-                            <a href="{{ url_for('manage.ads_group', group_id=group.id) }}" class="link-secondary">
-                                перейти
-                            </a>
-                        </td>
 
                     </tr>
                 {% endfor %}

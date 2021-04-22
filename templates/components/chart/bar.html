@@ -1,0 +1,54 @@
+<canvas id="{{ chart_name }}" width="{{ width }}" height="{{ height }}"></canvas>
+
+<script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
+<script>
+    const chartColors = [
+        "rgba(255, 99, 132, 1)",
+        "rgba(54, 162, 235, 1)",
+        'rgba(255, 206, 86, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(153, 102, 255, 1)',
+        'rgba(255, 159, 64, 1)',
+        "rgba(255, 99, 132, 1)",
+        "rgba(54, 162, 235, 1)",
+        'rgba(255, 206, 86, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(153, 102, 255, 1)',
+        'rgba(255, 159, 64, 1)',
+    ]
+    const labels = [{% for x in label_x %}"{{ x }}", {% endfor %}]
+    const datasets = [
+        {% for data in datas %}
+            {
+                data: [{% for d in data.data %} {{ d }}, {% endfor %}],
+                label: "{{ data.title }}",
+                backgroundColor: chartColors[{{ data.index }}],
+                borderColor: chartColors[{{ data.index }}],
+                borderWidth: 1,
+                minBarLength: 2,
+                fill: false
+
+            },
+        {% endfor %}
+    ]
+
+
+    new Chart(document.getElementById("{{ chart_name }}"), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            title: {
+                display: false,
+                text: ''
+            },
+        }
+    });
+</script>

@@ -1,12 +1,13 @@
-from flask import Blueprint, render_template, flash, request, redirect, url_for, make_response, send_file, send_from_directory
+from flask import (
+    Blueprint, render_template, flash, request, redirect, url_for, make_response, send_file, send_from_directory
+)
 from .forms import *
 from app.auth import decorators
 from app.auth.auth import Auth
-from app.manage.models import GroupAdvertise, Advertise, AdvertiseViewed, db
+from app.manage.models import GroupAdvertise, Advertise, AdvertiseViewed
 from src import exceptions
 from src.logger import logger
 import os
-from app.auth.utils import get_token_from_header
 
 __all__ = ['manage_app']
 
@@ -15,14 +16,6 @@ manage_app = Blueprint(
     __name__,
     template_folder='templates'
 )
-
-
-@manage_app.route('/test', methods=['GET', 'POST'])
-@decorators.login_required
-def test():
-    print(Auth.find_role(role_str='admin'))
-
-    return '123'
 
 
 @manage_app.route('/', methods=['GET', 'POST'])
@@ -135,6 +128,7 @@ def ads_new(group_id):
 
             title = request.form.get('title')
             shows_per_day = request.form.get('shows_per_day')
+            shows_max = request.form.get('shows_max')
             time_start = request.form.get('time_start')
             time_end = request.form.get('time_end')
             ads_ = Advertise.create(
@@ -143,6 +137,7 @@ def ads_new(group_id):
                 path=path,
                 filename=filename,
                 shows_per_day=shows_per_day,
+                shows_max=shows_max,
                 ext=ext,
                 time_start=time_start,
                 time_end=time_end,
@@ -173,6 +168,7 @@ def ads_view(group_id, ads_id):
                 id=ads_item.id,
                 title=request.form.get('title'),
                 shows_per_day=request.form.get('shows_per_day'),
+                shows_max=request.form.get('shows_max'),
                 time_start=request.form.get('time_start'),
                 time_end=request.form.get('time_end'),
                 user=Auth.get_user()

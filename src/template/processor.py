@@ -2,7 +2,7 @@ from app.auth.auth import Auth
 from datetime import datetime, timedelta
 
 
-def utcnow(d: int = 0):
+def date_now(d: int = 0):
     return datetime.utcnow() + timedelta(days=d)
 
 
@@ -14,6 +14,6 @@ def init_app(app):
         return dict(
             auth=Auth,
             file_is_exists=file_exists,
-            utcnow=utcnow,
+            date_now=date_now,
             list=list
         )

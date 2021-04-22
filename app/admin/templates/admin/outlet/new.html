@@ -1,0 +1,88 @@
+{% extends 'admin/admin.html' %}
+
+{% block title %}
+    Добавить
+{% endblock %}
+
+{% block content %}
+    {% with title='Добавить точку' %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+    {% include 'components/flash_messages.html' %}
+    <form method="POST" action="{{ url_for('admin.promo_azs_new') }}">
+        {{ form.csrf_token }}
+        <div class="row justify-content-md-center">
+            <div class="col-md-12">
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-md-3">
+                        {{ form.name.label(class_='form-label', for=form.name.name) }}
+                    </div>
+                    <div class="col-md-9">
+                        {{ form.name(class_='form-control') }}
+                    </div>
+                </div>
+                <div>
+                    {% with errors=form.name.errors %}
+                        {% include 'components/forms/errors.html' %}
+                    {% endwith %}
+                </div>
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-md-3">
+                        {{ form.ip.label(class_='form-label', for=form.ip.name) }}
+                    </div>
+                    <div class="col-md-9">
+                        {{ form.ip(class_='form-control', placeholder='192.168.1.1') }}
+                    </div>
+                </div>
+                <div>
+                    {% with errors=form.ip.errors %}
+                        {% include 'components/forms/errors.html' %}
+                    {% endwith %}
+                </div>
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-md-3">
+                        {{ form.lat.label(class_='form-label', for=form.lat.name) }}
+                    </div>
+                    <div class="col-md-9">
+                        {{ form.lat(class_='form-control') }}
+                    </div>
+                </div>
+                <div>
+                    {% with errors=form.lat.errors %}
+                        {% include 'components/forms/errors.html' %}
+                    {% endwith %}
+                </div>
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-md-3">
+                        {{ form.lon.label(class_='form-label', for=form.lon.name) }}
+                    </div>
+                    <div class="col-md-9">
+                        {{ form.lon(class_='form-control') }}
+                    </div>
+                </div>
+                <div>
+                    {% with errors=form.lon.errors %}
+                        {% include 'components/forms/errors.html' %}
+                    {% endwith %}
+                </div>
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-md-3">
+                        {{ form.status.label(class_='form-label', for=form.status.name) }}
+                    </div>
+                    <div class="col-md-7">
+                        {{ form.status(class_='form-control') }}
+                    </div>
+                </div>
+                <div>
+                    {% with errors=form.status.errors %}
+                        {% include 'components/forms/errors.html' %}
+                    {% endwith %}
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <input type="submit" class="btn btn-outline-primary justify-content-end" value="Добавить">
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

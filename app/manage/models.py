@@ -130,6 +130,7 @@ class Advertise(DateMixin, db.Model):
     path = db.Column(db.String(200), unique=True, nullable=False)
     time_start = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.utcnow)
     shows_per_day = db.Column(db.Integer, default=0)
+    shows_max = db.Column(db.Integer, default=0)
     time_end = db.Column(db.DATETIME)
     time_delete = db.Column(db.DATETIME)
     who_create = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
@@ -161,6 +162,11 @@ class Advertise(DateMixin, db.Model):
             and_(AdvertiseViewed.date_viewed >= d1, AdvertiseViewed.date_viewed <= d2)).count()
 
         return view_count < self.shows_per_day if self.shows_per_day else True
+
+    def have_shows_max(self):
+        view_count = AdvertiseViewed.query.count()
+
+        return view_count < self.shows_max if self.shows_max else True
 
     def get_count_shows_per_day(self, day: datetime.datetime):
         d1 = day.replace(hour=0, minute=0, second=0)
@@ -204,13 +210,14 @@ class Advertise(DateMixin, db.Model):
         return False
 
     @classmethod
-    def create(cls, *, title, group_id, path, filename, shows_per_day, ext, time_start, time_end, user):
+    def create(cls, *, title, group_id, path, filename, shows_per_day, shows_max, ext, time_start, time_end, user):
         advertise = cls(
             title=title,
             group_id=group_id,
             path=path,
             filename=filename,
             shows_per_day=shows_per_day or 0,
+            shows_max=shows_max or 0,
             file_extension=ext,
             time_start=time_start,
             time_end=time_end or None,
@@ -220,11 +227,12 @@ class Advertise(DateMixin, db.Model):
         return advertise
 
     @classmethod
-    def update(cls, *, id, title, shows_per_day, time_start, time_end, user):
+    def update(cls, *, id, title, shows_per_day, shows_max, time_start, time_end, user):
         ads = Advertise.query.get(id)
         if ads:
             ads.title = title
             ads.shows_per_day = shows_per_day or 0
+            ads.shows_max = shows_max or 0
             ads.time_start = time_start
             ads.time_end = time_end or None
             ads.who_update = user.id

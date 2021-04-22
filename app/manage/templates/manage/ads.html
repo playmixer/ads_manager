@@ -48,6 +48,14 @@
             </div>
             <div class="row g-3 align-items-center mb-2">
                 <div class="col-md-2">
+                    {{ form.shows_max.label(class_='form-label') }}
+                </div>
+                <div class="col-md-2">
+                    {{ form.shows_max(class_='form-control', value=ads_item.shows_max or 0) }}
+                </div>
+            </div>
+            <div class="row g-3 align-items-center mb-2">
+                <div class="col-md-2">
                     {{ form.time_start.label(class_='form-label') }}
                 </div>
                 <div class="col-md-2">

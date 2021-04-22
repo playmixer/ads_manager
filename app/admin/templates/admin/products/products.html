@@ -10,22 +10,25 @@
     {% with title='Список продуктов' %}
         {% include 'components/label_of_page.html' %}
     {% endwith %}
+    <div class="mb-4">
+        <a href="{{ url_for('admin.promo_products_new') }}" class="btn btn-outline-primary">Добавить</a>
+    </div>
     <table class="table table-hover" id="table_product">
         <thead>
         <tr>
-            <th>name</th>
-            <th>code</th>
-            <th>date_begin</th>
-            <th>date_end</th>
-            <th>max_count</th>
-            <th>max_count_per_azs</th>
-            <th>bar_code</th>
-            <th>enabled</th>
+            <th>Наименование</th>
+            <th>Код</th>
+            <th>Дата начала</th>
+            <th>Дата окончания</th>
+            <th>Количество</th>
+            <th>Количество для точки</th>
+            <th>Баркод</th>
+            <th>Включен</th>
         </tr>
         </thead>
         <tbody>
         {% for product in product_list %}
-            <tr>
+            <tr onclick="window.location=`{{ url_for('admin.promo_products_edit', product_id=product.id) }}`">
                 <td>{{ product.name }}</td>
                 <td>{{ product.code }}</td>
                 <td>{{ product.date_begin|datetime('%d.%m.%Y %H:%M:%S') }}</td>
@@ -46,8 +49,12 @@
     <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery.dataTables.js') }}"></script>
     <script>
-        $(document).ready( function () {
-            $('#table_product').DataTable();
+        $(document).ready(function () {
+            $('#table_product').DataTable({
+                language: {
+                    url: "{{ url_for('static', filename='Russian.json') }}"
+                }
+            });
         });
     </script>
 {% endblock %}

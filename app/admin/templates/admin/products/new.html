@@ -1,0 +1,138 @@
+{% extends 'admin/admin.html' %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+    {% with title='Добавить продукт ' %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+    <form method="POST" action="{{ url_for('admin.promo_products_new') }}">
+        {{ form.csrf_token }}
+        <div class="row justify-content-md-center">
+            <div class="col-md-12">
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-md-2">
+                        {{ form.name.label(class_='form-label', for=form.name.name) }}
+                    </div>
+                    <div class="col-md-10">
+                        {{ form.name(class_='form-control') }}
+                    </div>
+                </div>
+            </div>
+            <div>
+                {% with errors=form.name.errors %}
+                    {% include 'components/forms/errors.html' %}
+                {% endwith %}
+            </div>
+            <div class="col-md-12">
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-md-2">
+                        {{ form.code.label(class_='form-label', for=form.code.name) }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ form.code(class_='form-control') }}
+                    </div>
+                </div>
+            </div>
+            <div>
+                {% with errors=form.code.errors %}
+                    {% include 'components/forms/errors.html' %}
+                {% endwith %}
+            </div>
+            <div class="col-md-12">
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-md-2">
+                        {{ form.date_begin.label(class_='form-label', for=form.date_begin.name) }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ form.date_begin(class_='form-control') }}
+                    </div>
+                </div>
+            </div>
+            <div>
+                {% with errors=form.date_begin.errors %}
+                    {% include 'components/forms/errors.html' %}
+                {% endwith %}
+            </div>
+            <div class="col-md-12">
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-md-2">
+                        {{ form.date_end.label(class_='form-label', for=form.date_end.name) }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ form.date_end(class_='form-control') }}
+                    </div>
+                </div>
+            </div>
+            <div>
+                {% with errors=form.date_end.errors %}
+                    {% include 'components/forms/errors.html' %}
+                {% endwith %}
+            </div>
+            <div class="col-md-12">
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-md-2">
+                        {{ form.max_count.label(class_='form-label', for=form.max_count.name) }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ form.max_count(class_='form-control') }}
+                    </div>
+                </div>
+            </div>
+            <div>
+                {% with errors=form.max_count.errors %}
+                    {% include 'components/forms/errors.html' %}
+                {% endwith %}
+            </div>
+            <div class="col-md-12">
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-md-2">
+                        {{ form.max_count_per_azs.label(class_='form-label', for=form.max_count_per_azs.name) }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ form.max_count_per_azs(class_='form-control') }}
+                    </div>
+                </div>
+            </div>
+            <div>
+                {% with errors=form.max_count_per_azs.errors %}
+                    {% include 'components/forms/errors.html' %}
+                {% endwith %}
+            </div>
+            <div class="col-md-12">
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-md-2">
+                        {{ form.bar_code.label(class_='form-label', for=form.bar_code.name) }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ form.bar_code(class_='form-control') }}
+                    </div>
+                </div>
+            </div>
+            <div>
+                {% with errors=form.bar_code.errors %}
+                    {% include 'components/forms/errors.html' %}
+                {% endwith %}
+            </div>
+            <div class="col-md-12">
+                <div class="row g-3 align-items-center mb-2">
+                    <div class="col-md-2">
+                        {{ form.enabled.label(class_='form-label', for=form.enabled.name) }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ form.enabled(class_='form-control') }}
+                    </div>
+                </div>
+            </div>
+            <div>
+                {% with errors=form.enabled.errors %}
+                    {% include 'components/forms/errors.html' %}
+                {% endwith %}
+            </div>
+
+        </div>
+        <input type="submit" class="btn btn-outline-primary" value="Добавить">
+    </form>
+
+{% endblock %}

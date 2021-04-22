@@ -8,28 +8,28 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{{ url_for('admin.index') }}">Home</a>
+                    <a class="nav-link active" aria-current="page" href="{{ url_for('admin.index') }}">Главная страница</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
-                        Promo
+                        Промо
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{{ url_for('admin.promo_azs') }}">AZS</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('admin.promo_products') }}">Products</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('admin.promo_azs_request') }}">AZS request</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.promo_azs') }}">Торговые точки</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.promo_products') }}">Продукты</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><a class="dropdown-item" href="{{ url_for('admin.promo_azs_product') }}">AZS product</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('admin.promo_statistic_product') }}">AZS product statistic</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.promo_azs_request') }}">Разыгранные коды</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.promo_azs_product') }}">Разыгранные призы</a></li>
+{#                        <li><a class="dropdown-item" href="{{ url_for('admin.promo_statistic_product') }}">AZS product statistic</a></li>#}
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
-                        Manage
+                        Реклама
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="{{ url_for('admin.manage_ads_group') }}">Рекламные группы</a></li>

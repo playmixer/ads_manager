@@ -7,18 +7,17 @@
 {% endblock %}
 
 {% block content %}
-    {% with title='Список промо призов' %}
+    {% with title='Разыгранные призы' %}
         {% include 'components/label_of_page.html' %}
     {% endwith %}
     <table class="table table-hover" id="table_product">
         <thead>
         <tr>
-            <th>product_name</th>
-            <th>azs_name</th>
-            <th>azs_status</th>
-            <th>token</th>
-            <th>ts_create</th>
-            <th>ts_usage</th>
+            <th>Наименование</th>
+            <th>Название точки</th>
+            <th>Токен</th>
+            <th>Дата розыгрыша</th>
+            <th>Дата получения</th>
         </tr>
         </thead>
         <tbody>
@@ -26,7 +25,6 @@
             <tr>
                 <td>{{ row.product_name }}</td>
                 <td>{{ row.azs_name }}</td>
-                <td>{{ row.status }}</td>
                 <td>{{ row.token }}</td>
                 <td>{{ row.ts_create|datetime('%d.%m.%Y %H:%M:%S') }}</td>
                 <td>{{ row.ts_usage|datetime('%d.%m.%Y %H:%M:%S') }}</td>
@@ -43,7 +41,11 @@
     <script src="{{ url_for('static', filename='js/jquery.dataTables.js') }}"></script>
     <script>
         $(document).ready( function () {
-            $('#table_product').DataTable();
+            $('#table_product').DataTable({
+                language: {
+                    url: "{{ url_for('static', filename='Russian.json') }}"
+                }
+            });
         });
     </script>
 {% endblock %}

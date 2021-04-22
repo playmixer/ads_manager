@@ -7,17 +7,17 @@
 {% endblock %}
 
 {% block content %}
-    {% with title='Список запросов промо' %}
+    {% with title='Разыгранные коды' %}
         {% include 'components/label_of_page.html' %}
     {% endwith %}
     <table class="table table-hover" id="table_product">
         <thead>
         <tr>
-            <th>token</th>
-            <th>name</th>
-            <th>ip</th>
-            <th>ts_create</th>
-            <th>ts_usage</th>
+            <th>Токен</th>
+            <th>Название точки</th>
+            <th>IP Адрес</th>
+            <th>Дата создания</th>
+            <th>Дата показа</th>
         </tr>
         </thead>
         <tbody>
@@ -41,7 +41,11 @@
     <script src="{{ url_for('static', filename='js/jquery.dataTables.js') }}"></script>
     <script>
         $(document).ready( function () {
-            $('#table_product').DataTable();
+            $('#table_product').DataTable({
+                language: {
+                    url: "{{ url_for('static', filename='Russian.json') }}"
+                }
+            });
         });
     </script>
 {% endblock %}

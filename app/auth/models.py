@@ -1,5 +1,4 @@
 from src.database import db
-from sqlalchemy import and_, or_, delete
 import datetime
 import hashlib
 from .utils import generate_string
@@ -155,32 +154,3 @@ class Role(db.Model):
         role = cls.query.filter_by(title=role).first()
         return role
 
-# class UserRole(db.Model):
-#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
-#     user = db.relationship(User, backref="roles")
-#     role_id = db.Column(db.Integer, db.ForeignKey(Role.id))
-#     role = db.relationship(Role, backref="users")
-#     date_create = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.utcnow)
-#
-#     @classmethod
-#     def create(cls, user: User, role: Role):
-#         user_role = cls(user_id=user.id, role_id=role.id)
-#         db.session.add(user_role)
-#         db.session.commit()
-#
-# class Access(db.Model):
-#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-#     title = db.Column(db.String(200), nullable=False)
-#     role_id = db.Column(db.Integer, db.ForeignKey("AccessRole.id"))
-#     role = db.relationship("AccessRole", backref="accesses")
-#     date_create = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.utcnow)
-#
-#
-# class AccessRole(db.Model):
-#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-#     role_id = db.Column(db.Integer, db.ForeignKey(UserRole.id), nullable=False)
-#     role = db.relationship(UserRole, backref="accesses")
-#     access_id = db.Column(db.Integer, db.ForeignKey(Access.id), nullable=False)
-#     access = db.relationship(Access, backref="roles")
-#     date_create = db.Column(db.DATETIME, nullable=False, default=datetime.datetime.utcnow)

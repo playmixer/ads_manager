@@ -1,0 +1,62 @@
+{% extends 'admin/admin.html' %}
+
+{% block title %}azs{% endblock %}
+{% block css %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dataTables.css') }}">
+{% endblock %}
+
+{% block content %}
+    {% with title='Список торговых точек' %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+    <div class="mb-4">
+        <a href="{{ url_for('admin.promo_azs_new') }}" class="btn btn-outline-primary">Добавить</a>
+    </div>
+    <table class="table table-hover" id="table_azs">
+        <thead>
+        <tr>
+            <th>Название</th>
+            <th>num</th>
+            <th>Широта</th>
+            <th>Долгота</th>
+            <th>IP Адрес</th>
+            <th>Токен</th>
+            <th>Статус</th>
+            <th>Дата создания</th>
+            <th>Дата обновления</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for outlet in outlet_list %}
+            <tr onclick="window.location=`{{ url_for('admin.promo_azs_edit', outlet_id=outlet.id) }}`">
+                <td>{{ outlet.name }}</td>
+                <td>{{ outlet.num }}</td>
+                <td>{{ outlet.lat }}</td>
+                <td>{{ outlet.lon }}</td>
+                <td>{{ outlet.ip }}</td>
+                <td>{{ outlet.token }}</td>
+                <td>{{ outlet.status }}</td>
+                <td>{{ outlet.ts_create|datetime('%d.%m.%Y %H:%M:%S') }}</td>
+                <td>{{ outlet.ts_update|datetime('%d.%m.%Y %H:%M:%S') }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+
+{% block script %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.dataTables.js') }}"></script>
+    <script>
+        $(document).ready(function () {
+            $('#table_azs').DataTable({
+                language: {
+                    url: "{{ url_for('static', filename='Russian.json') }}"
+                }
+            });
+        });
+    </script>
+{% endblock %}
