@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить{% endblock %}
+
+{% block content %}
+    {% with title='Удалить точку '+product.name+'?' %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+    {% with crumbs=[
+        {'url': url_for('promo.index'), 'title': 'Главная страница'},
+        {'url': url_for('promo.product_list'), 'title': 'Продукты'},
+        {'url': url_for('promo.product_edit', product_id=product.id), 'title': product.name},
+        {'url': '', 'title': 'Удаление'}
+    ] %}
+        {% include 'components/breadcrumbs.html' %}
+    {% endwith %}
+    <a href="{{ url_for('promo.product_delete', product_id=product.id) }}" class="btn"></a>
+    <form action="{{ url_for('promo.product_delete', product_id=product.id) }}" method="POST">
+        {{ form.csrf_token }}
+        {{ form.submit_yes(class_='btn btn-primary') }}
+        <a href="{{ url_for('promo.product_edit', product_id=product.id) }}" class="btn btn-outline-danger">Отмена</a>
+    </form>
+{% endblock %}

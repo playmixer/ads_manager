@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Продукты
+{% endblock %}
+
+{% block content %}
+    {% with title='Продукты' %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+    {% with crumbs=[
+        {'url': url_for('promo.index'), 'title': 'Главная страница'},
+        {'url': '', 'title': 'Продукты'},
+    ] %}
+        {% include 'components/breadcrumbs.html' %}
+    {% endwith %}
+            {% include 'promo/chart/product_list_by_product.html' %}
+            <div class="d-flex">
+                <a href="{{ url_for('promo.product_new') }}" class="btn btn-outline-primary">
+                    Добавить продукт
+                </a>
+            </div>
+            <table class="table table-striped table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Наименование</th>
+                    <th scope="col">Код</th>
+                    <th scope="col">Дата начала</th>
+                    <th scope="col">Дата окончания</th>
+                    <th scope="col">Всего</th>
+                    <th scope="col">Всего для точки</th>
+                    <th scope="col">Баркод</th>
+                    <th scope="col">Статус</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for product in products %}
+                    <tr>
+                        <th scope="row">{{ loop.index }}</th>
+                        <td>
+                            <a href="{{ url_for('promo.product_edit', product_id=product.id) }}" class="link-secondary">
+                                {{ product.name }}
+                            </a>
+                        </td>
+                        <td>{{ product.code }}</td>
+                        <td>{{ product.date_begin|datetime('%d.%m.%Y %H:%M:%S') }}</td>
+                        <td>{{ product.date_end|datetime('%d.%m.%Y %H:%M:%S') }}</td>
+                        <td>{{ product.bar_code }}</td>
+                        <td>{{ product.max_count }}</td>
+                        <td>{{ product.max_count_per_azs }}</td>
+                        <td>{% if product.enabled == 1 %}
+                            <span class="text-success">Активен</span>
+                        {% else %}
+                            <span class="text-danger">Отключен</span>
+                        {% endif %}</td>
+                    </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+{% endblock %}

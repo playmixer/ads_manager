@@ -7,36 +7,36 @@
 
     {% set data = [] %}
     {% for d in list(range(7))[::-1] %}
-        {% set product=outlet.get_create_product(outlet_id=outlet.id, date=date_now(-d)).first() %}
+        {% set product=product.get_create_product(product_id=product.id, date=date_now(-d)).first() %}
         {% if product %}
-            <!--{{ data.append(product[1]) }}-->
+            <!--{{ data.append(product[2]) }}-->
         {% else %}
             <!--{{ data.append(0) }}-->
         {% endif %}
     {% endfor %}
     <!--{{ datas.append({
         'data': data,
-        'title': 'Запросили код',
+        'title': 'Разыграно',
         'index': 0,
         })
      }}-->
 
     {% set data = [] %}
     {% for d in list(range(7))[::-1] %}
-        {% set product=outlet.get_usage_product(outlet_id=outlet.id, date=date_now(-d)).first() %}
+        {% set product=product.get_usage_product(product_id=product.id, date=date_now(-d)).first() %}
         {% if product %}
-            <!--{{ data.append(product[1]) }}-->
+            <!--{{ data.append(product[2]) }}-->
         {% else %}
             <!--{{ data.append(0) }}-->
         {% endif %}
     {% endfor %}
     <!--{{ datas.append({
-            'data': data,
-            'title': 'Получил подарок',
-            'index': 1,
-            })
-         }}-->
-    {% with chart_name='chart-outlet', width=800, height=150, title_display=true, title_text='',
+        'data': data,
+        'title': 'Получено',
+        'index': 1,
+        })
+     }}-->
+    {% with chart_name='chart-product', width=800, height=150, title_display=true, title_text='',
         label_x=label, datas=datas %}
         {% include 'components/chart/bar.html' %}
     {% endwith %}

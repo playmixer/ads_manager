@@ -5,7 +5,7 @@
 {% block content %}
     <div class="row justify-content-md-center mb-5">
         <div>
-            {% with title='Главная страница' %}
+            {% with title='Промо' %}
                 {% include 'components/label_of_page.html' %}
             {% endwith %}
             {% with crumbs=[
@@ -14,23 +14,6 @@
             ] %}
                 {% include 'components/breadcrumbs.html' %}
             {% endwith %}
-            {#            <div style="width: 100%; height: 300px; display: flex; flex:1; justify-content: flex-end">#}
-            {#                {% include 'manage/chart/group_viewed_count_on_week.html' %}#}
-            {#            </div>#}
-            {#            <div class="row mb-5">#}
-            {#                <div class="col-6 col-md-3 col-sm-6">#}
-            {#                    {% with header='Показов за 24 часа', text=ads_viewed.get_viewed_24h(user=auth.get_user()).count() %}#}
-            {#                        {% include 'components/card.html' %}#}
-            {#                    {% endwith %}#}
-            {#                </div>#}
-            {#                <div class="col-6 col-md-3 col-sm-6">#}
-            {#                    {% with header='Показов за неделю', text=ads_viewed.get_viewed_7d(user=auth.get_user()).count() %}#}
-            {#                        {% include 'components/card.html' %}#}
-            {#                    {% endwith %}#}
-            {#                </div>#}
-            {#            </div>#}
-
-
             {% include 'promo/chart/outlet_list_create_product.html' %}
             <div class="d-flex">
                 <a href="{{ url_for('promo.outlet_new') }}" class="btn btn-outline-primary">

@@ -17,8 +17,8 @@ class FormEditGroup(FlaskForm):
 class FormNewAdvertise(FlaskForm):
     title = StringField('Название', validators=[DataRequired()])
     file = FileField('Файл', validators=[DataRequired()])
-    shows_per_day = IntegerField('Кол-во показов в день', validators=[Optional()])
-    shows_max = IntegerField('Максимальное кол-во показов', validators=[Optional()])
+    shows_per_day = IntegerField('Максимальное кол-во показов в день *', validators=[Optional()])
+    shows_max = IntegerField('Максимальное кол-во показов всего *', validators=[Optional()])
     time_start = DateField('Дата начала показа', validators=[DataRequired()], format='%Y-%m-%d')
     time_end = DateField('Дата окончания показа', validators=[Optional()], format='%Y-%m-%d')
 
@@ -26,8 +26,8 @@ class FormNewAdvertise(FlaskForm):
 class FormEditAdvertise(FlaskForm):
     title = StringField('Название', validators=[DataRequired()])
     # file = FileField('Файл', validators=[DataRequired()])
-    shows_per_day = IntegerField('Кол-во показов в день', validators=[Optional()])
-    shows_max = IntegerField('Максимальное кол-во показов', validators=[Optional()])
+    shows_per_day = IntegerField('Максимальное кол-во показов в день *', validators=[Optional()])
+    shows_max = IntegerField('Максимальное кол-во показов всего *', validators=[Optional()])
     time_start = DateField('Дата начала показа', validators=[DataRequired()], format='%Y-%m-%d')
     time_end = DateField('Дата окончания показа', validators=[Optional()], format='%Y-%m-%d')
 

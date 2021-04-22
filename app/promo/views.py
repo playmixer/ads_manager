@@ -16,8 +16,7 @@ __all__ = ['promo_app']
 @promo_app.route('/')
 def index():
 
-    # print(Azs.get_create_product(1).all())
-    # print(Azs.get_usage_product(1).all())
+    # print(Product.get_create_product(product_id=2).all())
     # session.rollback()
 
     return redirect(url_for('.outlet_list'))
@@ -135,9 +134,91 @@ def outlet_delete(outlet_id):
     return render_template('promo/outlet/delete.html', outlet=outlet, form=form)
 
 
-@promo_app.route('/productList', methods=['GET'])
+@promo_app.route('/products', methods=['GET'])
 @decorators.login_required
 def product_list():
-    products = session.query(Product)
+    try:
+        products = session.query(Product)
 
-    return render_template('promo/product/list.html', products=products)
+        return render_template('promo/products/products.html', products=products)
+    except Exception as err:
+        session.rollback()
+        return str(err)
+
+
+@promo_app.route('/products/create', methods=['GET', 'POST'])
+@decorators.login_required
+def product_new():
+
+    form = forms.NewProduct()
+    if form.is_submitted():
+        name = request.form.get('name')
+        code = request.form.get('code')
+        date_begin = request.form.get('date_begin')
+        date_end = request.form.get('date_end')
+        max_count = request.form.get('max_count')
+        max_count_per_azs = request.form.get('max_count_per_azs')
+        bar_code = request.form.get('bar_code')
+        enabled = request.form.get('enabled')
+
+    if form.validate_on_submit():
+        Product.new(
+            name=name,
+            code=code,
+            date_begin=date_begin,
+            date_end=date_end,
+            max_count=max_count,
+            max_count_per_azs=max_count_per_azs,
+            bar_code=bar_code,
+            enabled=enabled
+        )
+        flash('Добавлен', 'success')
+        return redirect(url_for('.product_list'))
+
+    return render_template('promo/products/new.html', form=form)
+
+
+@promo_app.route('/products/<product_id>/edit', methods=['GET', 'POST'])
+@decorators.login_required
+def product_edit(product_id):
+    product = session.query(Product).get(product_id)
+
+    form = forms.NewProduct()
+    if form.is_submitted():
+        name = request.form.get('name')
+        code = request.form.get('code')
+        date_begin = request.form.get('date_begin')
+        date_end = request.form.get('date_end')
+        max_count = request.form.get('max_count')
+        max_count_per_azs = request.form.get('max_count_per_azs')
+        bar_code = request.form.get('bar_code')
+        enabled = request.form.get('enabled')
+
+    if form.validate_on_submit():
+        product.update(
+            name=name,
+            code=code,
+            date_begin=date_begin,
+            date_end=date_end,
+            max_count=max_count,
+            max_count_per_azs=max_count_per_azs,
+            bar_code=bar_code,
+            enabled=enabled
+        )
+        flash('Сохранено', 'success')
+        return redirect(request.path)
+
+    return render_template('promo/products/edit.html', product=product, form=form)
+
+
+@promo_app.route('/products/<product_id>/delete', methods=['GET', 'POST'])
+@decorators.login_required
+def product_delete(product_id):
+    product = session.query(Product).get(product_id)
+
+    form = forms.FormYes()
+    if form.validate_on_submit():
+        product.remove()
+        return redirect(url_for('.product_list'))
+
+    return render_template('promo/products/delete.html', product=product, form=form)

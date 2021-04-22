@@ -50,12 +50,15 @@ class Azs(Base):
         session.commit()
 
     @classmethod
-    def get_create_product(cls, azs_id, date=None):
+    def get_create_product(cls, *, outlet_id=None, date=None):
         from datetime import datetime, timedelta
         res = session.query(func.date(AzsProduct.ts_create), func.count(AzsProduct.ts_create)). \
             join(AzsRequest).join(Azs). \
             group_by(Azs.name, func.date(AzsProduct.ts_create)). \
-            filter(and_(Azs.id == azs_id, AzsProduct.ts_create >= (datetime.now() - timedelta(days=7))))
+            filter(and_(AzsProduct.ts_create >= (datetime.now() - timedelta(days=7))))
+
+        if outlet_id:
+            res = res.filter(Azs.id == outlet_id)
 
         if date:
             d1 = date.replace(hour=0, minute=0, second=0)
@@ -65,14 +68,15 @@ class Azs(Base):
         return res
 
     @classmethod
-    def get_usage_product(cls, azs_id, date=None):
-        res = cls.get_create_product(azs_id, date).filter(AzsProduct.ts_usage >= AzsProduct.ts_create)
+    def get_usage_product(cls, *, outlet_id=None, date=None):
+        res = cls.get_create_product(outlet_id=outlet_id, date=date).filter(AzsProduct.ts_usage >= AzsProduct.ts_create)
 
         return res
 
 
 class Product(Base):
     __tablename__ = 'products'
+    choices_enabled = [(1, 'Активный'), (0, 'Отключен')]
 
     id = Column(Integer, primary_key=True)
     name = Column(String(50))
@@ -117,6 +121,30 @@ class Product(Base):
         if session.commit():
             return True
         return False
+
+    @classmethod
+    def get_create_product(cls, *, product_id=None, date=None):
+        from datetime import datetime, timedelta
+        res = session.query(AzsProduct.product_id, func.date(AzsProduct.ts_create), func.count(AzsProduct.ts_create)). \
+            join(AzsRequest).join(Product). \
+            group_by(Product.name, func.date(AzsProduct.ts_create)). \
+            filter(and_(AzsProduct.ts_create >= (datetime.now() - timedelta(days=7))))
+
+        if product_id:
+            res = res.filter(Product.id == product_id)
+
+        if date:
+            d1 = date.replace(hour=0, minute=0, second=0)
+            d2 = date.replace(hour=23, minute=59, second=59)
+            res = res.filter(and_(AzsProduct.ts_create >= d1, AzsProduct.ts_create <= d2))
+
+        return res
+
+    @classmethod
+    def get_usage_product(cls, *, product_id=None, date=None):
+        res = cls.get_create_product(product_id=product_id, date=date).filter(AzsProduct.ts_usage >= AzsProduct.ts_create)
+
+        return res
 
 
 class AzsRequest(Base):
