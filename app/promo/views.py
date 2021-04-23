@@ -16,11 +16,11 @@ __all__ = ['promo_app']
 @promo_app.route('/')
 def index():
 
-    print(Product.get_showes_poduct(product_id=2).all())
-    session.rollback()
+    # print(Product.get_showes_poduct(product_id=2).all())
+    # session.rollback()
 
-    # return redirect(url_for('.outlet_list'))
-    return render_template('promo/index.html')
+    return redirect(url_for('.outlet_list'))
+    # return render_template('promo/index.html')
 
 
 @promo_app.route('/outletList', methods=['GET'])

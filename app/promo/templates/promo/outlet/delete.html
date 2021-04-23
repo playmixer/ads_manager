@@ -8,7 +8,7 @@
     {% endwith %}
     {% with crumbs=[
         {'url': url_for('promo.index'), 'title': 'Главная страница'},
-        {'url': url_for('promo.outlet_list'), 'title': 'Промо'},
+        {'url': url_for('promo.outlet_list'), 'title': 'Торговая точка'},
         {'url': url_for('promo.outlet_edit', outlet_id=outlet.id), 'title': 'Точка ' + outlet.name},
         {'url': '', 'title': 'Удаление'}
     ] %}
