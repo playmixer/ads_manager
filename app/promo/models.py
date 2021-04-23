@@ -141,6 +141,24 @@ class Product(Base):
         return res
 
     @classmethod
+    def get_showes_poduct(cls, *, product_id=None, date=None):
+        from datetime import datetime, timedelta
+        res = session.query(AzsProduct.product_id, func.date(AzsRequest.ts_usage), func.count(AzsRequest.ts_usage)). \
+            join(AzsRequest).join(Product). \
+            group_by(AzsProduct.product_id, func.date(AzsRequest.ts_usage)). \
+            filter(and_(AzsRequest.ts_usage >= (datetime.now() - timedelta(days=7))))
+
+        if product_id:
+            res = res.filter(Product.id == product_id)
+
+        if date:
+            d1 = date.replace(hour=0, minute=0, second=0)
+            d2 = date.replace(hour=23, minute=59, second=59)
+            res = res.filter(and_(AzsProduct.ts_create >= d1, AzsProduct.ts_create <= d2))
+
+        return res
+
+    @classmethod
     def get_usage_product(cls, *, product_id=None, date=None):
         res = cls.get_create_product(product_id=product_id, date=date).filter(AzsProduct.ts_usage >= AzsProduct.ts_create)
 
