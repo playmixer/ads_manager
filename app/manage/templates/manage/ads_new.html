@@ -24,6 +24,9 @@
                 {{ form.title(class_='form-control') }}
             </div>
         </div>
+        {% with errors=form.title.erros %}
+            {% include 'components/forms/errors.html' %}
+        {% endwith %}
         <div class="row g-3 align-items-center mb-2">
             <div class="col-md-2">
                 {{ form.file.label(class_='form-label') }}
@@ -32,6 +35,10 @@
                 {{ form.file(class_='form-control') }}
             </div>
         </div>
+        {% with errors=form.file.erros %}
+            {% include 'components/forms/errors.html' %}
+        {% endwith %}
+        <div id="clip_errors" style="display: none" class="alert alert-danger" role="alert"></div>
         <div class="row g-3 align-items-center mb-2">
             <div class="col-md-2">
                 {{ form.shows_per_day.label(class_='form-label') }}
@@ -40,6 +47,9 @@
                 {{ form.shows_per_day(class_='form-control', value=0) }}
             </div>
         </div>
+        {% with errors=form.shows_per_day.erros %}
+            {% include 'components/forms/errors.html' %}
+        {% endwith %}
         <div class="row g-3 align-items-center mb-2">
             <div class="col-md-2">
                 {{ form.shows_max.label(class_='form-label') }}
@@ -48,6 +58,9 @@
                 {{ form.shows_max(class_='form-control', value=0) }}
             </div>
         </div>
+        {% with errors=form.shows_max.erros %}
+            {% include 'components/forms/errors.html' %}
+        {% endwith %}
         <div class="row g-3 align-items-center mb-2">
             <div class="col-md-2">
                 {{ form.time_start.label(class_='form-label') }}
@@ -56,6 +69,9 @@
                 {{ form.time_start(class_='form-control', value='') }}
             </div>
         </div>
+        {% with errors=form.time_start.erros %}
+            {% include 'components/forms/errors.html' %}
+        {% endwith %}
         <div class="row g-3 align-items-center mb-2">
             <div class="col-md-2">
                 {{ form.time_end.label(class_='form-label') }}
@@ -64,11 +80,99 @@
                 {{ form.time_end(class_='form-control') }}
             </div>
         </div>
+        {% with errors=form.time_end.erros %}
+            {% include 'components/forms/errors.html' %}
+        {% endwith %}
         <div>
             <sub>* - при 0 количество показов не ограничено</sub>
         </div>
         <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-outline-primary">Добавить</button>
+            <button type="submit" id="form_submit" class="btn btn-outline-primary" disabled>Добавить</button>
         </div>
     </form>
+{% endblock %}
+
+{% block script %}
+    {{ super() }}
+    <script>
+        let fileProperties = {};
+        let clip_errors = {};
+        const showClipErrors = (errors = null) => {
+            const errElement = document.querySelector('#clip_errors');
+            console.log(errors.length);
+            if (errors.length) {
+                errElement.style.display = 'block';
+                for (let i = 0; i < errors.length; i++) {
+                    const span = document.createElement('span');
+                    span.innerText = errors[i] + '\n';
+                    errElement.appendChild(span);
+                }
+            }
+        };
+
+        const getVideoPropertiesFromInput = (arr, objFile) => {
+            const vid = document.createElement('video');
+            const fileURL = URL.createObjectURL(objFile.files[0]);
+
+            vid.src = fileURL;
+            arr.duration = null;
+            arr.size = null;
+            arr.extension = null;
+
+            const errElement = document.querySelector('#clip_errors');
+            errElement.style.display = 'none';
+            errElement.innerHTML = "";
+
+            arr.extension = objFile.files[0].name.split('.').pop();
+            arr.size = objFile.files[0].size / 1024 / 1024; //mb
+
+            vid.ondurationchange = function () {
+                arr.duration = this.duration;
+            }
+        }
+
+        document.querySelector('#file').addEventListener('change', function () {
+            getVideoPropertiesFromInput(fileProperties, this);
+
+            setTimeout(() => {
+                const submit = document.querySelector('#form_submit');
+                submit.disabled = false;
+                const valid = validateClip(fileProperties);
+                if (!valid.ok) {
+                    showClipErrors(valid.errors)
+                    submit.disabled = true;
+                }
+            }, 1000)
+        })
+
+        const validateClip = (clip) => {
+            console.log(clip)
+            let errors = []
+            const duration_min = {{ settings.advertise.clip.duration_min }};
+            const duration_max = {{ settings.advertise.clip.duration_max }};
+            const size_max = {{ settings.advertise.clip.size_max }};
+            const extensions = {{ settings.advertise.clip.extensions|safe }};
+
+            console.log('длительность', clip.duration)
+            if (clip.duration && !(duration_min <= clip.duration && clip.duration <= duration_max)) {
+                errors.push(`Длительность ролика не соответствует критериям (мин=${duration_min} сек., макс=${duration_max} сек)`);
+            }
+
+            console.log('размер', clip.size)
+            if (clip.size && size_max < clip.size) {
+                errors.push(`Файл превышает размер ${size_max} Мб`)
+            }
+
+            console.log("расширение файла", clip.extension);
+            if (clip.extension && !extensions.includes(clip.extension)) {
+                errors.push('Файл имеет не допустимое расширение')
+            }
+
+            return {
+                ok: !errors.length,
+                errors: errors
+            }
+        }
+
+    </script>
 {% endblock %}
