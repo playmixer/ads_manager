@@ -48,7 +48,7 @@
                         <td>{{ product.date_end|datetime('%d.%m.%Y %H:%M:%S') }}</td>
                         <td>{{ product.bar_code }}</td>
                         <td>{{ product.max_count }}</td>
-                        <td>{{ product.max_count_per_azs }}</td>
+                        <td>{{ product.max_count_per_outlet }}</td>
                         <td>{% if product.enabled == 1 %}
                             <span class="text-success">Активен</span>
                         {% else %}

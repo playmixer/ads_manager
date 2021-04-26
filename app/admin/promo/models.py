@@ -3,7 +3,7 @@ from .database import Base, session
 from datetime import datetime
 
 
-class Azs(Base):
+class Outlet(Base):
     __tablename__ = 'azs'
 
     id = Column(Integer, primary_key=True)

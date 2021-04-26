@@ -1,11 +1,12 @@
 from sqlalchemy import Column, Integer, String, Float, TIMESTAMP, ForeignKey, SmallInteger, func, and_
 from sqlalchemy.orm import relationship
-from .database import Base, session, insert
+# from .database import Base, session, insert
+from src.database import db
 from datetime import datetime
 
 
-class Azs(Base):
-    __tablename__ = 'azs'
+class Outlet(db.Model):
+    __tablename__ = 'outlet'
     choices_status = [(1, 'Активный'), (0, 'Отключен')]
 
     id = Column(Integer, primary_key=True)
@@ -22,7 +23,7 @@ class Azs(Base):
     @classmethod
     def new(cls, *, name, num=1, lat, lon, ip, token=None, status):
         from src import utils
-        azs = cls(
+        outlet = cls(
             name=name,
             num=num,
             lat=lat,
@@ -31,8 +32,9 @@ class Azs(Base):
             token=token or utils.generate_string(20),
             status=status
         )
-        insert(azs)
-        return azs
+        db.session.add(outlet)
+        db.session.commit()
+        return outlet
 
     def update(self, *, name, num=1, lat, lon, ip, token=None, status):
         self.name = name
@@ -43,38 +45,39 @@ class Azs(Base):
         if token:
             self.token = token
         self.status = status
-        session.commit()
+        db.session.commit()
 
     def remove(self):
-        session.delete(self)
-        session.commit()
+        db.session.delete(self)
+        db.session.commit()
 
     @classmethod
     def get_create_product(cls, *, outlet_id=None, date=None):
         from datetime import datetime, timedelta
-        res = session.query(func.date(AzsProduct.ts_create), func.count(AzsProduct.ts_create)). \
-            join(AzsRequest).join(Azs). \
-            group_by(Azs.name, func.date(AzsProduct.ts_create)). \
-            filter(and_(AzsProduct.ts_create >= (datetime.now() - timedelta(days=7))))
+        res = db.session.query(func.date(OutletProduct.ts_create), func.count(OutletProduct.ts_create)). \
+            join(OutletRequest).join(Outlet). \
+            group_by(Outlet.name, func.date(OutletProduct.ts_create)). \
+            filter(and_(OutletProduct.ts_create >= (datetime.now() - timedelta(days=7))))
 
         if outlet_id:
-            res = res.filter(Azs.id == outlet_id)
+            res = res.filter(Outlet.id == outlet_id)
 
         if date:
             d1 = date.replace(hour=0, minute=0, second=0)
             d2 = date.replace(hour=23, minute=59, second=59)
-            res = res.filter(and_(AzsProduct.ts_create >= d1, AzsProduct.ts_create <= d2))
+            res = res.filter(and_(OutletProduct.ts_create >= d1, OutletProduct.ts_create <= d2))
 
         return res
 
     @classmethod
     def get_usage_product(cls, *, outlet_id=None, date=None):
-        res = cls.get_create_product(outlet_id=outlet_id, date=date).filter(AzsProduct.ts_usage >= AzsProduct.ts_create)
+        res = cls.get_create_product(outlet_id=outlet_id, date=date).filter(
+            OutletProduct.ts_usage >= OutletProduct.ts_create)
 
         return res
 
 
-class Product(Base):
+class Product(db.Model):
     __tablename__ = 'products'
     choices_enabled = [(1, 'Активный'), (0, 'Отключен')]
 
@@ -84,51 +87,52 @@ class Product(Base):
     date_begin = Column(TIMESTAMP, default=datetime.now)
     date_end = Column(TIMESTAMP, default=datetime.now)
     max_count = Column(Integer, default=0)
-    max_count_per_azs = Column(Integer, default=0)
+    max_count_per_outlet = Column(Integer, default=0)
     bar_code = Column(String(50))
     enabled = Column(SmallInteger, default=1)
 
-    def update(self, *, name, code, date_begin, date_end, max_count, max_count_per_azs, bar_code, enabled):
+    def update(self, *, name, code, date_begin, date_end, max_count, max_count_per_outlet, bar_code, enabled):
         self.name = name
         self.code = code
         self.date_begin = date_begin
         self.date_end = date_end
         self.max_count = max_count or 0
-        self.max_count_per_azs = max_count_per_azs or 0
+        self.max_count_per_outlet = max_count_per_outlet or 0
         self.bar_code = bar_code or 0
         self.enabled = enabled or 0
-        session.commit()
+        db.session.commit()
         return self
 
     @classmethod
-    def new(cls, *, name, code, date_begin, date_end, max_count, max_count_per_azs, bar_code, enabled):
+    def new(cls, *, name, code, date_begin, date_end, max_count, max_count_per_outlet, bar_code, enabled):
         product = cls(
             name=name,
             code=code,
             date_begin=date_begin,
             date_end=date_end,
             max_count=max_count,
-            max_count_per_azs=max_count_per_azs,
+            max_count_per_outlet=max_count_per_outlet,
             bar_code=bar_code,
             enabled=enabled
         )
-        session.add(product)
-        session.commit()
+        db.session.add(product)
+        db.session.commit()
         return product
 
     def remove(self):
-        session.delete(self)
-        if session.commit():
+        db.session.delete(self)
+        if db.session.commit():
             return True
         return False
 
     @classmethod
     def get_create_product(cls, *, product_id=None, date=None):
         from datetime import datetime, timedelta
-        res = session.query(AzsProduct.product_id, func.date(AzsProduct.ts_create), func.count(AzsProduct.ts_create)). \
-            join(AzsRequest).join(Product). \
-            group_by(Product.name, func.date(AzsProduct.ts_create)). \
-            filter(and_(AzsProduct.ts_create >= (datetime.now() - timedelta(days=7))))
+        res = db.session.query(OutletProduct.product_id, func.date(OutletProduct.ts_create),
+                               func.count(OutletProduct.ts_create)). \
+            join(OutletRequest).join(Product). \
+            group_by(Product.name, func.date(OutletProduct.ts_create)). \
+            filter(and_(OutletProduct.ts_create >= (datetime.now() - timedelta(days=7))))
 
         if product_id:
             res = res.filter(Product.id == product_id)
@@ -136,17 +140,18 @@ class Product(Base):
         if date:
             d1 = date.replace(hour=0, minute=0, second=0)
             d2 = date.replace(hour=23, minute=59, second=59)
-            res = res.filter(and_(AzsProduct.ts_create >= d1, AzsProduct.ts_create <= d2))
+            res = res.filter(and_(OutletProduct.ts_create >= d1, OutletProduct.ts_create <= d2))
 
         return res
 
     @classmethod
     def get_showes_poduct(cls, *, product_id=None, date=None):
         from datetime import datetime, timedelta
-        res = session.query(AzsProduct.product_id, func.date(AzsRequest.ts_usage), func.count(AzsRequest.ts_usage)). \
-            join(AzsRequest).join(Product). \
-            group_by(AzsProduct.product_id, func.date(AzsRequest.ts_usage)). \
-            filter(and_(AzsRequest.ts_usage >= (datetime.now() - timedelta(days=7))))
+        res = db.session.query(OutletProduct.product_id, func.date(OutletRequest.ts_usage),
+                               func.count(OutletRequest.ts_usage)). \
+            join(OutletRequest).join(Product). \
+            group_by(OutletProduct.product_id, func.date(OutletRequest.ts_usage)). \
+            filter(and_(OutletRequest.ts_usage >= (datetime.now() - timedelta(days=7))))
 
         if product_id:
             res = res.filter(Product.id == product_id)
@@ -154,36 +159,47 @@ class Product(Base):
         if date:
             d1 = date.replace(hour=0, minute=0, second=0)
             d2 = date.replace(hour=23, minute=59, second=59)
-            res = res.filter(and_(AzsProduct.ts_create >= d1, AzsProduct.ts_create <= d2))
+            res = res.filter(and_(OutletProduct.ts_create >= d1, OutletProduct.ts_create <= d2))
 
         return res
 
     @classmethod
     def get_usage_product(cls, *, product_id=None, date=None):
-        res = cls.get_create_product(product_id=product_id, date=date).filter(AzsProduct.ts_usage >= AzsProduct.ts_create)
+        res = cls.get_create_product(product_id=product_id, date=date).filter(
+            OutletProduct.ts_usage >= OutletProduct.ts_create)
 
         return res
 
 
-class AzsRequest(Base):
-    __tablename__ = 'azs_request'
+class OutletRequest(db.Model):
+    __tablename__ = 'outlet_request'
 
     id = Column(Integer, primary_key=True)
     token = Column(String(50))
-    azs_id = Column(Integer, ForeignKey(Azs.id))
-    azs = relationship(Azs, backref='requests')
-    azs_ip = Column(String(50))
+    outlet_id = Column(Integer, ForeignKey(Outlet.id), nullable=False)
+    outlet = relationship(Outlet, backref='requests')
+    outlet_ip = Column(String(50))
     ts_create = Column(TIMESTAMP, nullable=False, default=datetime.now)
     ts_usage = Column(TIMESTAMP, nullable=True)
 
 
-class AzsProduct(Base):
-    __tablename__ = 'azs_product'
+class OutletProduct(db.Model):
+    __tablename__ = 'outlet_product'
 
     id = Column(Integer, primary_key=True)
     product_id = Column(Integer, ForeignKey(Product.id))
-    product = relationship(Product, backref='azs')
-    azs_request_id = Column(Integer, ForeignKey(AzsRequest.id))
-    azs_request = relationship(AzsRequest, backref='azs_request')
+    product = relationship(Product, backref='outlet')
+    outlet_request_id = Column(Integer, ForeignKey(OutletRequest.id))
+    outlet_request = relationship(OutletRequest, backref='outlet_request')
     ts_create = Column(TIMESTAMP, nullable=False, default=datetime.now)
     ts_usage = Column(TIMESTAMP, nullable=True)
+
+
+class OutletMac(db.Model):
+    __tablename__ = 'outlet_mac'
+
+    id = Column(Integer, primary_key=True)
+    outlet_id = Column(Integer, ForeignKey(Outlet.id))
+    mac = Column(String(32))
+    ts_first_seen = Column(TIMESTAMP, nullable=False, default=datetime.now)
+    ts_last_seen = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)

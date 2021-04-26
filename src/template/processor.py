@@ -1,5 +1,6 @@
 from app.auth.auth import Auth
 from datetime import datetime, timedelta
+from src.settings import settings
 
 
 def date_now(d: int = 0):
@@ -15,5 +16,6 @@ def init_app(app):
             auth=Auth,
             file_is_exists=file_exists,
             date_now=date_now,
-            list=list
+            list=list,
+            settings=settings
         )

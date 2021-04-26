@@ -27,11 +27,10 @@ def index():
 @decorators.login_required
 def outlet_list():
     try:
-        outlet_items = session.query(Azs)
+        outlet_items = Outlet.query
 
         return render_template('promo/outlet/list.html', outlet_items=outlet_items)
     except Exception as err:
-        session.rollback()
         return str(err)
 
 
@@ -58,7 +57,7 @@ def outlet_new():
                 flash('Не корректная долгота', 'error')
 
         if form.validate_on_submit():
-            azs = Azs.new(
+            outlet = Outlet.new(
                 name=name,
                 num=1,
                 lat=lat,
@@ -66,13 +65,12 @@ def outlet_new():
                 ip=ip,
                 status=1
             )
-            if azs:
+            if outlet:
                 flash(f'Точка добавлена')
                 return redirect(url_for('promo.outlet_list'))
 
         return render_template('promo/outlet/new.html', form=form)
     except Exception as err:
-        session.rollback()
         return str(err)
 
 
@@ -81,7 +79,7 @@ def outlet_new():
 def outlet_edit(outlet_id):
     try:
 
-        outlet = session.query(Azs).filter_by(id=outlet_id).first()
+        outlet = Outlet.query.filter_by(id=outlet_id).first()
         if not outlet:
             return render_template('404.html'), 404
 
@@ -115,14 +113,13 @@ def outlet_edit(outlet_id):
 
         return render_template('promo/outlet/edit.html', form=form, outlet=outlet)
     except Exception as err:
-        session.rollback()
         return str(err)
 
 
 @promo_app.route('/outletList/<outlet_id>/delete', methods=['GET', 'POST'])
 @decorators.login_required
 def outlet_delete(outlet_id):
-    outlet: Azs = session.query(Azs).get(outlet_id)
+    outlet: Outlet = Outlet.query.get(outlet_id)
     if not outlet:
         return render_template('404.html'), 404
 
@@ -138,11 +135,10 @@ def outlet_delete(outlet_id):
 @decorators.login_required
 def product_list():
     try:
-        products = session.query(Product)
+        products = Product.query
 
         return render_template('promo/products/products.html', products=products)
     except Exception as err:
-        session.rollback()
         return str(err)
 
 
@@ -157,7 +153,7 @@ def product_new():
         date_begin = request.form.get('date_begin')
         date_end = request.form.get('date_end')
         max_count = request.form.get('max_count')
-        max_count_per_azs = request.form.get('max_count_per_azs')
+        max_count_per_outlet = request.form.get('max_count_per_outlet')
         bar_code = request.form.get('bar_code')
         enabled = request.form.get('enabled')
 
@@ -168,7 +164,7 @@ def product_new():
             date_begin=date_begin,
             date_end=date_end,
             max_count=max_count,
-            max_count_per_azs=max_count_per_azs,
+            max_count_per_outlet=max_count_per_outlet,
             bar_code=bar_code,
             enabled=enabled
         )
@@ -181,7 +177,7 @@ def product_new():
 @promo_app.route('/products/<product_id>/edit', methods=['GET', 'POST'])
 @decorators.login_required
 def product_edit(product_id):
-    product = session.query(Product).get(product_id)
+    product = Product.query.get(product_id)
 
     form = forms.NewProduct()
     if form.is_submitted():
@@ -190,7 +186,7 @@ def product_edit(product_id):
         date_begin = request.form.get('date_begin')
         date_end = request.form.get('date_end')
         max_count = request.form.get('max_count')
-        max_count_per_azs = request.form.get('max_count_per_azs')
+        max_count_per_outlet = request.form.get('max_count_per_outlet')
         bar_code = request.form.get('bar_code')
         enabled = request.form.get('enabled')
 
@@ -201,7 +197,7 @@ def product_edit(product_id):
             date_begin=date_begin,
             date_end=date_end,
             max_count=max_count,
-            max_count_per_azs=max_count_per_azs,
+            max_count_per_outlet=max_count_per_outlet,
             bar_code=bar_code,
             enabled=enabled
         )
@@ -214,7 +210,7 @@ def product_edit(product_id):
 @promo_app.route('/products/<product_id>/delete', methods=['GET', 'POST'])
 @decorators.login_required
 def product_delete(product_id):
-    product = session.query(Product).get(product_id)
+    product = Product.query.get(product_id)
 
     form = forms.FormYes()
     if form.validate_on_submit():

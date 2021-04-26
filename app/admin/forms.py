@@ -3,7 +3,7 @@ from wtforms import StringField, FileField, SubmitField, SelectField, IntegerFie
 from wtforms.fields.html5 import DateField, DateTimeLocalField
 from wtforms.validators import DataRequired, Optional, Length, IPAddress, ValidationError
 from app.manage.models import GroupAdvertise
-from app.promo.models import Azs
+from app.promo.models import Outlet
 
 
 class Product(FlaskForm):
@@ -12,7 +12,7 @@ class Product(FlaskForm):
     date_begin = DateTimeLocalField('Дата начала', validators=[Optional()], format='%Y-%m-%dT%H:%M')
     date_end = DateTimeLocalField('Дата окончания', validators=[Optional()], format='%Y-%m-%dT%H:%M')
     max_count = IntegerField('Количество', validators=[Optional()])
-    max_count_per_azs = IntegerField('Количество для точки', validators=[Optional()])
+    max_count_per_outlet = IntegerField('Количество для точки', validators=[Optional()])
     bar_code = StringField('Баркод', validators=[DataRequired()])
     enabled = IntegerField('Разрешен', validators=[Optional()])
 
@@ -32,4 +32,4 @@ class NewOutlet(FlaskForm):
     lat = FloatField('Широта', validators=[DataRequired()])
     lon = FloatField('Долгота', validators=[DataRequired()])
     token = StringField('Токен', validators=[Optional(), Length(max=50)])
-    status = SelectField('Статус', coerce=int, choices=Azs.choices_status)
+    status = SelectField('Статус', coerce=int, choices=Outlet.choices_status)

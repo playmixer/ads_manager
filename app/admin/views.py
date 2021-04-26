@@ -26,7 +26,7 @@ def index():
 @decorators.role_required(role='admin')
 def promo_azs():
     try:
-        azs_list = session.query(Azs)
+        azs_list = session.query(Outlet)
         return render_template('admin/outlet/outlet.html', outlet_list=azs_list)
     except Exception as err:
         session.rollback()
@@ -62,7 +62,7 @@ def promo_azs_new():
                 flash('Не корректная долгота', 'error')
 
         if form.validate_on_submit():
-            outlet = Azs.new(
+            outlet = Outlet.new(
                 name=name,
                 lat=lat,
                 lon=lon,
@@ -85,7 +85,7 @@ def promo_azs_new():
 @decorators.role_required(role='admin')
 def promo_azs_edit(outlet_id):
     try:
-        outlet = session.query(Azs).get(outlet_id)
+        outlet = Outlet.query.get(outlet_id)
 
         form = forms.NewOutlet()
 
@@ -133,7 +133,7 @@ def promo_azs_edit(outlet_id):
 @decorators.role_required(role='admin')
 def promo_azs_delete(outlet_id):
     try:
-        outlet = session.query(Azs).get(outlet_id)
+        outlet = Outlet.query.get(outlet_id)
         form = forms.FormYes()
         if form.validate_on_submit():
             outlet.remove()
@@ -172,7 +172,7 @@ def promo_products_new():
             date_begin = request.form.get('date_begin')
             date_end = request.form.get('date_end')
             max_count = request.form.get('max_count')
-            max_count_per_azs = request.form.get('max_count_per_azs')
+            max_count_per_outlet = request.form.get('max_count_per_outlet')
             bar_code = request.form.get('bar_code')
             enabled = request.form.get('enabled')
 
@@ -183,7 +183,7 @@ def promo_products_new():
                 date_begin=date_begin,
                 date_end=date_end,
                 max_count=max_count,
-                max_count_per_azs=max_count_per_azs,
+                max_count_per_outlet=max_count_per_outlet,
                 bar_code=bar_code,
                 enabled=enabled
             )
@@ -211,7 +211,7 @@ def promo_products_edit(product_id):
             date_begin = request.form.get('date_begin')
             date_end = request.form.get('date_end')
             max_count = request.form.get('max_count')
-            max_count_per_azs = request.form.get('max_count_per_azs')
+            max_count_per_outlet = request.form.get('max_count_per_outlet')
             bar_code = request.form.get('bar_code')
             enabled = request.form.get('enabled')
 
@@ -222,7 +222,7 @@ def promo_products_edit(product_id):
                 date_begin=date_begin,
                 date_end=date_end,
                 max_count=max_count,
-                max_count_per_azs=max_count_per_azs,
+                max_count_per_outlet=max_count_per_outlet,
                 bar_code=bar_code,
                 enabled=enabled
             )
@@ -261,8 +261,8 @@ def promo_azs_product():
     azs_product_list = database.select(
         """select p.name as product_name, a.name as azs_name, a.status, ar.token, ar.ts_create, ap.ts_usage from azs_product ap
 join products p on ap.product_id = p.id
-left join azs_request ar on ap.azs_request_id = ar.id
-join azs a on ar.azs_id = a.id""")
+left join outlet_request ar on ap.outlet_request_id = ar.id
+join azs a on ar.outlet_id = a.id""")
     return render_template('admin/azs_product.html', azs_product_list=azs_product_list)
 
 
@@ -272,7 +272,7 @@ join azs a on ar.azs_id = a.id""")
 def promo_azs_request():
     azs_request = database.select(
         """select ar.token, a.name, a.ip, ar.ts_create, ar.ts_usage from azs_request ar
-join azs a on a.id = ar.azs_id
+join azs a on a.id = ar.outlet_id
 order by ar.ts_create desc""")
     return render_template('admin/azs_request.html', azs_request=azs_request)
 
@@ -287,8 +287,8 @@ p.name as product_name,
 count(*) as count_products
 from azs as a, products p,azs_request ar, azs_product ap
 where p.id = ap.product_id
-and ar.azs_id = a.id
-and ap.azs_request_id = ar.id
+and ar.outlet_id = a.id
+and ap.outlet_request_id = ar.id
 group by a.name, p.name""")
     return render_template('admin/promo_statistic_products.html', statistic_products=statistic_products)
 

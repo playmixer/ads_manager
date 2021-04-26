@@ -1,0 +1,12 @@
+{
+  "advertise": {
+    "clip": {
+      "duration_min": 9,
+      "duration_max": 11,
+      "size_max": 10,
+      "extensions": [
+        "mp4"
+      ]
+    }
+  }
+}

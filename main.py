@@ -4,7 +4,6 @@ from src.template import processor, filters
 from app.auth import decorators
 import config
 
-
 # from src.models import *
 
 

@@ -88,15 +88,15 @@
             <div class="col-md-12">
                 <div class="row g-3 align-items-center mb-2">
                     <div class="col-md-2">
-                        {{ form.max_count_per_azs.label(class_='form-label', for=form.max_count_per_azs.name) }}
+                        {{ form.max_count_per_outlet.label(class_='form-label', for=form.max_count_per_outlet.name) }}
                     </div>
                     <div class="col-md-2">
-                        {{ form.max_count_per_azs(class_='form-control') }}
+                        {{ form.max_count_per_outlet(class_='form-control') }}
                     </div>
                 </div>
             </div>
             <div>
-                {% with errors=form.max_count_per_azs.errors %}
+                {% with errors=form.max_count_per_outlet.errors %}
                     {% include 'components/forms/errors.html' %}
                 {% endwith %}
             </div>
