@@ -1,8 +1,9 @@
 from sqlalchemy import Column, Integer, String, Float, TIMESTAMP, ForeignKey, SmallInteger, func, and_
-from sqlalchemy.orm import relationship
-# from .database import Base, session, insert
+from sqlalchemy.orm import relationship, backref
 from src.database import db
 from datetime import datetime
+from app.auth.models import User
+from app.manage.models import GroupAdvertise
 
 
 class Outlet(db.Model):
@@ -17,11 +18,13 @@ class Outlet(db.Model):
     ip = Column(String(20))
     token = Column(String(50), unique=True)
     status = Column(Integer)
+    user_id = Column(Integer, ForeignKey(User.id))
+    user = relationship(User, backref='outlet')
     ts_create = Column(TIMESTAMP, default=datetime.now)
     ts_update = Column(TIMESTAMP, nullable=True, default=datetime.now, onupdate=datetime.now)
 
     @classmethod
-    def new(cls, *, name, num=1, lat, lon, ip, token=None, status):
+    def new(cls, *, name, num=1, lat, lon, ip, token=None, status, user):
         from src import utils
         outlet = cls(
             name=name,
@@ -30,7 +33,8 @@ class Outlet(db.Model):
             lon=lon,
             ip=ip,
             token=token or utils.generate_string(20),
-            status=status
+            status=status,
+            user_id=user.id
         )
         db.session.add(outlet)
         db.session.commit()
@@ -77,6 +81,16 @@ class Outlet(db.Model):
         return res
 
 
+class OutletAdsGroup(db.Model):
+    __tablename__ = 'outlet_group_advertise'
+
+    id = Column(Integer, primary_key=True)
+    outlet_id = Column(Integer, ForeignKey(Outlet.id, ondelete='CASCADE'), nullable=False)
+    outlet = relationship(Outlet, backref='group')
+    group_id = Column(Integer, ForeignKey(GroupAdvertise.id, ondelete='CASCADE'), nullable=False)
+    group = relationship(GroupAdvertise, backref='outlet')
+
+
 class Product(db.Model):
     __tablename__ = 'products'
     choices_enabled = [(1, 'Активный'), (0, 'Отключен')]
@@ -90,6 +104,8 @@ class Product(db.Model):
     max_count_per_outlet = Column(Integer, default=0)
     bar_code = Column(String(50))
     enabled = Column(SmallInteger, default=1)
+    user_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    user = relationship(User, backref='products')
 
     def update(self, *, name, code, date_begin, date_end, max_count, max_count_per_outlet, bar_code, enabled):
         self.name = name
@@ -104,7 +120,7 @@ class Product(db.Model):
         return self
 
     @classmethod
-    def new(cls, *, name, code, date_begin, date_end, max_count, max_count_per_outlet, bar_code, enabled):
+    def new(cls, *, name, code, date_begin, date_end, max_count, max_count_per_outlet, bar_code, enabled, user):
         product = cls(
             name=name,
             code=code,
@@ -113,7 +129,8 @@ class Product(db.Model):
             max_count=max_count,
             max_count_per_outlet=max_count_per_outlet,
             bar_code=bar_code,
-            enabled=enabled
+            enabled=enabled,
+            user_id=user.id
         )
         db.session.add(product)
         db.session.commit()

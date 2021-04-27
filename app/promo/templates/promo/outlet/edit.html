@@ -10,7 +10,7 @@
     {% endwith %}
     {% with crumbs=[
         {'url': url_for('promo.index'), 'title': 'Главная страница'},
-        {'url': url_for('promo.index'), 'title': 'Торговая точка'},
+        {'url': url_for('promo.index'), 'title': 'Торговые точки'},
         {'url': '', 'title': 'Точка ' + outlet.name}
     ] %}
         {% include 'components/breadcrumbs.html' %}

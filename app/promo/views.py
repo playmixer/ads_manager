@@ -3,6 +3,7 @@ from .models import *
 from . import forms
 from src import validate
 from app.auth import decorators
+from app.auth.auth import Auth
 
 promo_app = Blueprint(
     'promo',
@@ -15,7 +16,6 @@ __all__ = ['promo_app']
 
 @promo_app.route('/')
 def index():
-
     # print(Product.get_showes_poduct(product_id=2).all())
     # session.rollback()
 
@@ -27,7 +27,8 @@ def index():
 @decorators.login_required
 def outlet_list():
     try:
-        outlet_items = Outlet.query
+        user = Auth.get_user()
+        outlet_items = Outlet.query.filter_by(user_id=user.id)
 
         return render_template('promo/outlet/list.html', outlet_items=outlet_items)
     except Exception as err:
@@ -57,13 +58,15 @@ def outlet_new():
                 flash('Не корректная долгота', 'error')
 
         if form.validate_on_submit():
+            user = Auth.get_user()
             outlet = Outlet.new(
                 name=name,
                 num=1,
                 lat=lat,
                 lon=lon,
                 ip=ip,
-                status=1
+                status=1,
+                user=user
             )
             if outlet:
                 flash(f'Точка добавлена')
@@ -135,7 +138,8 @@ def outlet_delete(outlet_id):
 @decorators.login_required
 def product_list():
     try:
-        products = Product.query
+        user = Auth.get_user()
+        products = user.products  # Product.query
 
         return render_template('promo/products/products.html', products=products)
     except Exception as err:
@@ -145,7 +149,6 @@ def product_list():
 @promo_app.route('/products/create', methods=['GET', 'POST'])
 @decorators.login_required
 def product_new():
-
     form = forms.NewProduct()
     if form.is_submitted():
         name = request.form.get('name')
@@ -166,7 +169,8 @@ def product_new():
             max_count=max_count,
             max_count_per_outlet=max_count_per_outlet,
             bar_code=bar_code,
-            enabled=enabled
+            enabled=enabled,
+            user=Auth.get_user()
         )
         flash('Добавлен', 'success')
         return redirect(url_for('.product_list'))
