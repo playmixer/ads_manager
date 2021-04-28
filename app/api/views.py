@@ -59,9 +59,13 @@ def get_ads_group():
     try:
         payload = Auth.get_jwt_payload()
         outlet_id = payload.get('outlet_id')
-        outlet = Outlet.query.get(outlet_id)
-        ads = outlet.get_advertise()
+        user_id = payload.get('user_id')
+        outlet = Outlet.query.filter_by(id=outlet_id, user_id=user_id).first()
 
+        if not outlet:
+            return render_json(result=False, message="Outlet not found")
+
+        ads = outlet.get_advertise()
         if not ads:
             # raise Exception('Advertise not found')
             return render_json(result=True, data=[])

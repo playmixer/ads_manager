@@ -105,7 +105,8 @@ class Auth:
             'exp': expiration,
             'admin': False,
             'device_id': device_id,
-            'outlet_id': outlet.id
+            'outlet_id': outlet.id,
+            'outlet_token': outlet.token
         }
         b64_header = base64.b64encode(json.dumps(header).encode()).decode()
         b64_payload = base64.b64encode(json.dumps(payload).encode()).decode()
