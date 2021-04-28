@@ -19,7 +19,7 @@ class TypeAdvertiseList(BaseModel):
 class TypeGroupAdvertise(BaseModel):
     title: str
     token: str
-    advertises: list[TypeAdvertise]
+    advertises: List[TypeAdvertise]
 
     class Config:
         orm_mode = True
