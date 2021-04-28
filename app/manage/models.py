@@ -193,7 +193,7 @@ class Advertise(DateMixin, db.Model):
         return view_count < self.shows_per_day if self.shows_per_day else True
 
     def have_shows_max(self):
-        view_count = AdvertiseViewed.query.count()
+        view_count = AdvertiseViewed.query.filter_by(advertise_id=self.id).count()
 
         return view_count < self.shows_max if self.shows_max else True
 
