@@ -13,36 +13,36 @@ api_app_auth = Blueprint(
 )
 
 
-@api_app_auth.route('/signup', methods=['POST'])
-def signup():
-    try:
-        json = request.json
-        if not json:
-            raise Exception('Not have json')
-
-        username = json.get('username')
-        password = json.get('password')
-        device_id = json.get('device_id')
-        if username is password is None:
-            raise exceptions.NotHaveAttributes('No have attrs username or password')
-        ip = request.remote_addr
-
-        user = Auth.login_m(username, password)
-        if not user:
-            raise exceptions.NotAuthenticated('Username or password is not correct')
-
-        jwt = Auth.gen_jwt(user, device_id)
-        token = Auth.create_session(user, ip, device_id).token
-        return render_json(result=True, data={
-            'accessToken': jwt,
-            'refreshToken': token
-        })
-
-    except exceptions.NotHaveAttributes as err:
-        return render_json(result=False, message=str(err))
-    except Exception as err:
-        logger.error('signup \n\t' + str(err))
-        return render_json(result=False, message=str(err))
+# @api_app_auth.route('/signup', methods=['POST'])
+# def signup():
+#     try:
+#         json = request.json
+#         if not json:
+#             raise Exception('Not have json')
+#
+#         username = json.get('username')
+#         password = json.get('password')
+#         device_id = json.get('device_id')
+#         if username is password is None:
+#             raise exceptions.NotHaveAttributes('No have attrs username or password')
+#         ip = request.remote_addr
+#
+#         user = Auth.login_m(username, password)
+#         if not user:
+#             raise exceptions.NotAuthenticated('Username or password is not correct')
+#
+#         jwt = Auth.gen_jwt(user, device_id)
+#         token = Auth.create_session(user, ip, device_id).token
+#         return render_json(result=True, data={
+#             'accessToken': jwt,
+#             'refreshToken': token
+#         })
+#
+#     except exceptions.NotHaveAttributes as err:
+#         return render_json(result=False, message=str(err))
+#     except Exception as err:
+#         logger.error('signup \n\t' + str(err))
+#         return render_json(result=False, message=str(err))
 
 
 @api_app_auth.route('/signupToken', methods=['POST'])
@@ -52,18 +52,19 @@ def signup_token():
         if not json:
             raise Exception('Not have json')
 
-        token = json.get('personal_token')
+        token = json.get('token')
         device_id = json.get('device_id')
         if token is None:
             raise exceptions.NotHaveAttributes('No have attrs personal_token')
         ip = request.remote_addr
 
-        user = Auth.login_m_token(token)
-        if not user:
+        outlet = Auth.login_m_token(token)
+        if not outlet:
             raise exceptions.NotAuthenticated('Token is not correct')
 
-        jwt = Auth.gen_jwt(user, device_id)
-        token = Auth.create_session(user, ip, device_id).token
+        user = outlet.user
+        jwt = Auth.gen_jwt(user, device_id, outlet)
+        token = Auth.create_outlet_session(outlet, ip, device_id).token
         return render_json(result=True, data={
             'accessToken': jwt,
             'refreshToken': token
@@ -88,8 +89,9 @@ def refresh_token():
         if not sess:
             return '401 Unauthorized', 401
 
-        user = sess.user
-        jwt = Auth.gen_jwt(user, sess.device_id)
+        outlet = sess.outlet
+        user = outlet.user
+        jwt = Auth.gen_jwt(user, sess.device_id, outlet)
         token = sess.token
         return render_json(result=True, data={
             'accessToken': jwt,

@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, make_response
+from sqlalchemy import or_, and_
 from .models import *
 from . import forms
-from src import validate
 from app.auth import decorators
 from app.auth.auth import Auth
+from src import exceptions
 
 promo_app = Blueprint(
     'promo',
@@ -23,7 +24,7 @@ def index():
     # return render_template('promo/index.html')
 
 
-@promo_app.route('/outletList', methods=['GET'])
+@promo_app.route('/outlets', methods=['GET'])
 @decorators.login_required
 def outlet_list():
     try:
@@ -45,32 +46,10 @@ def outlet_new():
         ip = request.form.get('ip')
         lat = request.form.get('lat')
         lon = request.form.get('lon')
-        if form.is_submitted():
-            if not validate.ip_address(ip):
-                flash('Не корректный ip адрес', 'error')
-            try:
-                float(lat)
-            except ValueError:
-                flash('Не корректная широта', 'error')
-            try:
-                float(lon)
-            except ValueError:
-                flash('Не корректная долгота', 'error')
-
-        if form.validate_on_submit():
-            user = Auth.get_user()
-            outlet = Outlet.new(
-                name=name,
-                num=1,
-                lat=lat,
-                lon=lon,
-                ip=ip,
-                status=1,
-                user=user
-            )
-            if outlet:
-                flash(f'Точка добавлена')
-                return redirect(url_for('promo.outlet_list'))
+        user = Auth.get_user()
+        if form.new(name=name, lat=lat, lon=lon, ip=ip, user=user):
+            flash(f'Точка добавлена')
+            return redirect(url_for('promo.outlet_list'))
 
         return render_template('promo/outlet/new.html', form=form)
     except Exception as err:
@@ -81,40 +60,44 @@ def outlet_new():
 @decorators.login_required
 def outlet_edit(outlet_id):
     try:
+        user = Auth.get_user()
+        outlet = Outlet.query.filter_by(id=outlet_id, user_id=user.id).first()
+        ads_groups = GroupAdvertise.get_group_list(filters=[GroupAdvertise.Filters.actual]).filter_by(user_id=user.id)
 
-        outlet = Outlet.query.filter_by(id=outlet_id).first()
         if not outlet:
-            return render_template('404.html'), 404
+            raise exceptions.NotFoundPage()
 
-        form = forms.NewOutlet()
+        form_name = request.form.get('form_name')
 
-        name = request.form.get('name')
-        ip = request.form.get('ip')
-        lat = request.form.get('lat')
-        lon = request.form.get('lon')
-        status = request.form.get('status')
-        if form.is_submitted():
-            if not validate.ip_address(ip):
-                flash('Не корректный ip адрес', 'error')
-            try:
-                float(lat)
-            except ValueError:
-                flash('Не корректная широта', 'error')
-            try:
-                float(lon)
-            except ValueError:
-                flash('Не корректная долгота', 'error')
+        formOutlet = forms.NewOutlet()
+        if formOutlet.is_form(form_name):
+            name = request.form.get('name')
+            ip = request.form.get('ip')
+            lat = request.form.get('lat')
+            lon = request.form.get('lon')
+            status = request.form.get('status')
+            if formOutlet.update(outlet=outlet, name=name, lat=lat, lon=lon, ip=ip, status=status):
+                return redirect(request.path)
 
-        if form.validate_on_submit():
-            outlet.update(
-                name=name,
-                lat=lat,
-                lon=lon,
-                ip=ip,
-                status=status
-            )
+        formOutletAdsGroup = forms.OutletAdsGroup()
+        choices = list(
+            (group.id, group.title, 'selected' if outlet in group.outlets else '')
+            for group in ads_groups)
+        formOutletAdsGroup.set_ads_group_choices(choices)
+        if formOutletAdsGroup.is_form(form_name):
+            form_ads_groups = request.form.getlist('ads_groups')
+            if formOutletAdsGroup.set(outlet, form_ads_groups):
+                return redirect(request.path)
 
-        return render_template('promo/outlet/edit.html', form=form, outlet=outlet)
+        formAdsGroupToken = forms.AdsGroupToken()
+        if formAdsGroupToken.is_form(form_name):
+            if formAdsGroupToken.token_create(outlet):
+                return redirect(request.path)
+
+        return render_template('promo/outlet/edit.html', formOutlet=formOutlet, outlet=outlet,
+                               formOutletAdsGroup=formOutletAdsGroup, formAdsGroupToken=formAdsGroupToken)
+    except exceptions.NotFoundPage:
+        return render_template('404.html'), 404
     except Exception as err:
         return str(err)
 
@@ -122,16 +105,19 @@ def outlet_edit(outlet_id):
 @promo_app.route('/outletList/<outlet_id>/delete', methods=['GET', 'POST'])
 @decorators.login_required
 def outlet_delete(outlet_id):
-    outlet: Outlet = Outlet.query.get(outlet_id)
-    if not outlet:
+    try:
+        outlet: Outlet = Outlet.query.get(outlet_id)
+        if not outlet:
+            raise exceptions.NotFoundPage()
+
+        form = forms.FormYes()
+        if form.is_submitted():
+            outlet.remove()
+            return redirect(url_for('promo.outlet_list'))
+
+        return render_template('promo/outlet/delete.html', outlet=outlet, form=form)
+    except exceptions.NotFoundPage:
         return render_template('404.html'), 404
-
-    form = forms.FormYes()
-    if form.is_submitted():
-        outlet.remove()
-        return redirect(url_for('promo.outlet_list'))
-
-    return render_template('promo/outlet/delete.html', outlet=outlet, form=form)
 
 
 @promo_app.route('/products', methods=['GET'])

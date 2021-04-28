@@ -1,9 +1,15 @@
 from sqlalchemy import Column, Integer, String, Float, TIMESTAMP, ForeignKey, SmallInteger, func, and_
 from sqlalchemy.orm import relationship, backref
 from src.database import db
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.auth.models import User
 from app.manage.models import GroupAdvertise
+
+outlet_ads_group = db.Table(
+    'outlet_group_advertise',
+    db.Column('outlet_id', db.Integer, db.ForeignKey('outlet.id'), primary_key=True),
+    db.Column('group_id', db.Integer, db.ForeignKey('group_advertise.id'), primary_key=True)
+)
 
 
 class Outlet(db.Model):
@@ -22,6 +28,8 @@ class Outlet(db.Model):
     user = relationship(User, backref='outlet')
     ts_create = Column(TIMESTAMP, default=datetime.now)
     ts_update = Column(TIMESTAMP, nullable=True, default=datetime.now, onupdate=datetime.now)
+    groups = db.relationship('GroupAdvertise', secondary=outlet_ads_group, lazy='dynamic',
+                             backref=db.backref('outlets', lazy='dynamic'))
 
     @classmethod
     def new(cls, *, name, num=1, lat, lon, ip, token=None, status, user):
@@ -80,15 +88,84 @@ class Outlet(db.Model):
 
         return res
 
+    def append_group(self, group, commit=True):
+        # outlet_ads_group = OutletAdsGroup(
+        #     outlet_id=self.id,
+        #     group_id=group.id
+        # )
+        # db.session.add(outlet_ads_group)
+        self.groups.append(group)
+        if commit:
+            db.session.commit()
+        return outlet_ads_group
 
-class OutletAdsGroup(db.Model):
-    __tablename__ = 'outlet_group_advertise'
+    def is_in(self, group):
+        if group in self.groups:
+            return True
+        return False
 
-    id = Column(Integer, primary_key=True)
-    outlet_id = Column(Integer, ForeignKey(Outlet.id, ondelete='CASCADE'), nullable=False)
-    outlet = relationship(Outlet, backref='group')
-    group_id = Column(Integer, ForeignKey(GroupAdvertise.id, ondelete='CASCADE'), nullable=False)
-    group = relationship(GroupAdvertise, backref='outlet')
+    def delete_from_group(self, group, commit=True):
+        # outlet_ads_group = OutletAdsGroup.query.filter_by(outlet_id=self.id, group_id=group.id)
+        # outlet_ads_group.delete()
+        self.groups.remove(group)
+        if commit:
+            db.session.commit()
+
+    def token_create(self, token=None):
+        from src.utils import generate_string
+        if not token:
+            token = generate_string(50)
+        if len(self.auth_token):
+            group_ads_token = self.auth_token[0]
+            group_ads_token.token = token
+        else:
+            group_ads_token = OutletToken(
+                token=token,
+                outlet_id=self.id
+            )
+            db.session.add(group_ads_token)
+        db.session.commit()
+        return group_ads_token
+
+    def get_group_list(self):
+        groups = self.ads_groups
+
+        return groups
+
+    def get_advertise(self):
+        res = []
+        for group in self.groups:
+            if group.is_actual():
+                for advertise in group.advertises:
+                    if advertise.is_actual():
+                        res.append(advertise)
+        return res
+
+
+class OutletToken(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    token = db.Column(db.String(200), nullable=True)
+    outlet_id = db.Column(db.Integer, db.ForeignKey(Outlet.id, ondelete='CASCADE'), nullable=False)
+    outlet = db.relationship(Outlet, backref='auth_token', uselist=False)
+    time_created = db.Column(db.DATETIME, nullable=False, default=datetime.utcnow)
+    time_updated = db.Column(db.DATETIME, onupdate=datetime.utcnow)
+
+    @classmethod
+    def check_token(cls, token):
+        t = cls.query.filter_by(token=token).first()
+        if t:
+            return t.outlet
+        return False
+
+
+# class OutletAdsGroup(db.Model):
+#     __tablename__ = 'outlet_group_advertise'
+#
+#     id = Column(Integer, primary_key=True)
+#     outlet_id = Column(Integer, ForeignKey(Outlet.id, ondelete='CASCADE'), nullable=False)
+#     outlet = relationship(Outlet, backref='ads_groups')
+#     group_id = Column(Integer, ForeignKey(GroupAdvertise.id, ondelete='CASCADE'), nullable=False)
+#     group = relationship(GroupAdvertise, backref='outlets')
 
 
 class Product(db.Model):
@@ -220,3 +297,50 @@ class OutletMac(db.Model):
     mac = Column(String(32))
     ts_first_seen = Column(TIMESTAMP, nullable=False, default=datetime.now)
     ts_last_seen = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
+
+
+class OutletSessions(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    outlet_id = db.Column(db.Integer, db.ForeignKey(Outlet.id))
+    outlet = db.relationship(Outlet, backref="sessions")
+    device_id = db.Column(db.String(200))
+    ip = db.Column(db.String(15))
+    token = db.Column(db.String(200), nullable=False)
+    time_created = db.Column(db.DATETIME, nullable=False, default=datetime.utcnow)
+    time_end = db.Column(db.DATETIME, nullable=True, default=datetime.utcnow)
+
+    @classmethod
+    def create(cls, outlet, device_id, ip):
+        from src.utils import generate_string
+        lifetime = datetime.utcnow() + timedelta(days=60)
+        sess = cls(
+            outlet_id=outlet.id,
+            device_id=device_id,
+            ip=ip,
+            token=generate_string(50),
+            time_end=lifetime
+        )
+        db.session.add(sess)
+        db.session.commit()
+        return sess
+
+    @classmethod
+    def refresh(cls, token: str):
+        from src.utils import generate_string
+        sess = cls.query.filter_by(token=token).first()
+        if sess:
+            lifetime = datetime.utcnow() + timedelta(days=60)
+            sess.token = generate_string(50)
+            sess.time_end = lifetime
+            db.session.commit()
+        return sess
+
+    @classmethod
+    def delete_token(cls, token):
+        sess = cls.query.filter_by(token=token).first()
+
+        if sess:
+            db.session.delete(sess)
+            db.session.commit()
+            return True
+        return False

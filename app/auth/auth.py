@@ -15,12 +15,15 @@ class Auth:
 
     @classmethod
     def logout_m(cls, token):
-        return Sessions.delete_token(token)
+        from app.promo.models import OutletSessions
+        return OutletSessions.delete_token(token)
 
     @classmethod
     def login_m_token(cls, token: str):
-        user = User.check_personal_token(token)
-        return user
+        from app.promo.models import OutletToken
+        # user = User.check_personal_token(token)
+        outlet = OutletToken.check_token(token)
+        return outlet
 
     @classmethod
     def registration(cls, username, password):
@@ -76,11 +79,24 @@ class Auth:
 
     @classmethod
     def refresh_session(cls, token):
-        sess = Sessions.refresh(token)
+        from app.promo.models import OutletSessions
+        sess = OutletSessions.refresh(token)
         return sess
 
     @classmethod
-    def gen_jwt(cls, user: User, device_id: str = ''):
+    def create_outlet_session(cls, outlet, ip: str, device_id: str):
+        from app.promo.models import OutletSessions
+        sess = OutletSessions.create(outlet, device_id, ip)
+        return sess
+
+    @classmethod
+    def refresh_outlet_session(cls, token):
+        from app.promo.models import OutletSessions
+        sess = OutletSessions.refresh(token)
+        return sess
+
+    @classmethod
+    def gen_jwt(cls, user: User, device_id: str = '', outlet=None):
         SECRET_KEY = current_app.config['SECRET_KEY']
         expiration = (datetime.datetime.utcnow() + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S')
         header = {'alg': 'HS256', 'typ': 'JWT'}
@@ -88,7 +104,8 @@ class Auth:
             'user_id': user.id,
             'exp': expiration,
             'admin': False,
-            'device_id': device_id
+            'device_id': device_id,
+            'outlet_id': outlet.id
         }
         b64_header = base64.b64encode(json.dumps(header).encode()).decode()
         b64_payload = base64.b64encode(json.dumps(payload).encode()).decode()

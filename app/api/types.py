@@ -2,18 +2,6 @@ from pydantic import BaseModel
 from typing import List
 
 
-class TypeGroupAdvertise(BaseModel):
-    title: str
-    token: str
-
-    class Config:
-        orm_mode = True
-
-
-class TypeGroupsAdvertise(BaseModel):
-    __root__: List[TypeGroupAdvertise]
-
-
 class TypeAdvertise(BaseModel):
     filename: str
 
@@ -26,3 +14,16 @@ class TypeAdvertiseList(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class TypeGroupAdvertise(BaseModel):
+    title: str
+    token: str
+    advertises: list[TypeAdvertise]
+
+    class Config:
+        orm_mode = True
+
+
+class TypeGroupsAdvertise(BaseModel):
+    __root__: List[TypeGroupAdvertise]

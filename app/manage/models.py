@@ -44,6 +44,22 @@ class GroupAdvertise(DateMixin, db.Model):
     time_delete = db.Column(db.DATETIME)
     who_update = db.Column(db.Integer, db.ForeignKey(User.id))
 
+    def is_actual(self, filters: List[int] = [Filters.actual, Filters.enabled]):
+        res = True
+        if self.Filters.actual in filters:
+            res &= True if self.time_delete is None else False
+        if self.Filters.enabled in filters:
+            res &= True if self.status == self.StatusType.enabled else False
+        return res
+
+    def get_group_list(self, filters: List[int] = []):
+        group_list = GroupAdvertise.query
+        if self.Filters.actual in filters:
+            group_list = group_list.filter_by(time_delete=None)
+        if self.Filters.enabled in filters:
+            group_list = group_list.filter_by(status=self.StatusType.enabled)
+        return group_list
+
     def get_user(self):
         user = User.query.get(self.user_id)
         return user
@@ -116,10 +132,14 @@ class GroupAdvertise(DateMixin, db.Model):
     def get_group_by_token(cls, token: str):
         return cls.get_group_list().filter_by(token=token).first()
 
+    def in_outlet(self, outlet):
+        return self.filter(outlet in self.outlets)
+
 
 class Advertise(DateMixin, db.Model):
     class Filters:
         actual = 0
+        enabled = 1
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(200))
@@ -135,6 +155,15 @@ class Advertise(DateMixin, db.Model):
     time_delete = db.Column(db.DATETIME)
     who_create = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
     who_update = db.Column(db.Integer, db.ForeignKey(User.id))
+
+    def is_actual(self, filters: List[int] = [Filters.enabled, Filters.actual]):
+        res = True
+        if self.Filters.enabled in filters:
+            res &= True if self.time_delete is None else False
+        if self.Filters.actual in filters:
+            res &= True if self.time_end is None or self.time_end > datetime.datetime.utcnow() else False
+            res &= True if self.time_start < datetime.datetime.utcnow() else False
+        return res
 
     def get_path(self):
         path_split = self.path.split('\\')
@@ -171,7 +200,7 @@ class Advertise(DateMixin, db.Model):
     def get_count_shows_per_day(self, day: datetime.datetime):
         d1 = day.replace(hour=0, minute=0, second=0)
         d2 = day.replace(hour=23, minute=59, second=59)
-        return AdvertiseViewed.get_between_date(d1, d2).filter(Advertise.id==self.id)
+        return AdvertiseViewed.get_between_date(d1, d2).filter(Advertise.id == self.id)
 
     @classmethod
     def get_ads_by_filename(cls, filename):

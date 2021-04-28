@@ -4,6 +4,7 @@ from src.template import processor, filters
 from app.auth import decorators
 import config
 
+
 # from src.models import *
 
 
@@ -38,6 +39,21 @@ def create_app():
     app.errorhandler(404)(
         decorators.login_required(lambda x: render_template('404.html'))
     )
+
+    @app.route(subdirectory + '/source')
+    def source():
+        from flask import request, jsonify
+        from app.promo.models import Outlet
+        ip = request.remote_addr
+        outlet = Outlet.query.filter_by(ip=ip).first()
+        token = ''
+        if outlet:
+            if len(outlet.auth_token):
+                token = outlet.auth_token[0].token
+        return jsonify({
+            'ip': ip,
+            'token': token
+        })
 
     return app
 
