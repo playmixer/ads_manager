@@ -35,7 +35,7 @@ class NewOutlet(NewForm):
 
     def new(self, name, lat, lon, ip, user):
         if self.is_submitted():
-            if not self.ip_address(ip):
+            if not validate.ip_address(ip):
                 flash('Не корректный ip адрес', 'error')
             try:
                 float(lat)
