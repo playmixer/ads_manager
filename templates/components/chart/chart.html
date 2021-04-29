@@ -1,0 +1,178 @@
+<div class="mb-4 row justify-content-end">
+    <div class="col-md-9" style="display: none" id="chart_filter_block">
+        <div class="row d-flex justify-content-end">
+            <div class="col-md-4 row d-flex justify-content-end align-items-center">
+                <div class="col-md-3">
+                    <label for="chart_period">График</label>
+                </div>
+                <div class="col">
+                    <select class="form-select" name="chart_content" id="chart_content">
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3 row d-flex justify-content-end align-items-center">
+                <div class="col-md-4">
+                    <label for="chart_period">Период</label>
+                </div>
+                <div class="col">
+                    <select class="form-select" name="chart_period" id="chart_period">
+                        <option value="24h">24 часа</option>
+                        <option value="7d" selected>7 дней</option>
+                        <option value="30d">30 дней</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <button class="btn btn-primary" id="get_data_chart">Применить</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-1" style="margin-left: 60px">
+        <a href="#" class="btn btn-outline-primary" id="chart_filter_toggle">Фильтр</a>
+    </div>
+    <div class="d-flex justify-content-center">
+        <div id="chart_container" style="width: 100%">
+            <canvas id="chart" width="800" height="200"></canvas>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
+    <script>
+        const chartColors = [
+            "rgba(255, 99, 132, 1)",
+            "rgba(54, 162, 235, 1)",
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)',
+        ]
+
+        let data = {
+            labels: [1, 1, 2, 3, 4, 5],
+            datasets: [
+                {
+                    data: [1, 2, 3, 4, 5, 6],
+                    label: "1",
+                    borderColor: chartColors[1],
+                    fill: false
+                }
+            ]
+        }
+
+
+        let chartPanel = new Chart(document.getElementById("chart"), {});
+
+        function chartColoring(index) {
+            return chartColors[index]
+        }
+
+        function createChart({type = null, options = null, data = null, text = null}) {
+            const container = document.querySelector('#chart_container');
+            switch (type) {
+                case 'pie':
+                    container.style.width = '400px';
+                    break;
+                default:
+                    container.style.width = '100%';
+
+            }
+            chartPanel.destroy();
+            data.datasets = data.datasets.map(val => {
+                console.log(typeof val.index, val.index)
+                const color = typeof val.index === "number"
+                    ? chartColoring(val.index)
+                    : val.index.map(val => {
+                        return chartColoring(val)
+                    })
+                let res = {
+                    ...val,
+                    borderColor: chartColoring(val.index),
+                    backgroundColor: color,
+                    borderWidth: 1,
+                    minBarLength: 2,
+                    fill: false
+                }
+                return res;
+            })
+            chartPanel = new Chart(document.getElementById("chart"), {
+                type: type || 'line',
+                data: data || {
+                    labels: data.labels,
+                    datasets: data.datasets
+                },
+                options: options || {
+                    plugins: {
+                        title: {
+                            display: !!text,
+                            text: text
+                        }
+                    }
+                }
+            });
+        }
+
+        function addData(chart, label, data) {
+            chart.data.labels.push(label);
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data.push(data);
+            });
+            chart.update();
+        }
+
+        function removeData(chart) {
+            chart.data.labels.pop();
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data.pop();
+            });
+            chart.update();
+        }
+
+        function chartFilters() {
+            const content = document.querySelector('#chart_content').value;
+            const period = document.querySelector('#chart_period').value;
+
+
+            return {
+                content: content,
+                period: period
+            }
+        }
+
+        function setSelectContentChart(datas) {
+            const content = document.querySelector('#chart_content');
+            content.innerHTML = '';
+            for (data in datas) {
+                const option = document.createElement('option');
+                option.value = data
+                option.innerText = datas[data].title
+                content.appendChild(option)
+            }
+        }
+
+        document.querySelector('#chart_filter_toggle').addEventListener('click', function () {
+            const filter_block = document.querySelector('#chart_filter_block');
+            filter_block.style.display = filter_block.style.display == 'block' ? 'none' : 'block';
+        })
+
+        async function renderChart() {
+            const filters = chartFilters();
+            const url = charts_variable[filters.content].url + `?period=${filters.period}`;
+            let response = await fetch(url);
+            if (response.ok) {
+                let json = await response.json();
+                if (json.Result) {
+                    const data = json.Data;
+                    console.log(data);
+                    createChart({
+                        ...data,
+                        text: charts_variable[filters.content].title
+                    })
+                }
+            } else {
+                console.log(response.status)
+            }
+        }
+
+        document.querySelector('#get_data_chart').addEventListener('click', renderChart)
+    </script>
+</div>

@@ -21,10 +21,10 @@
         </tr>
         </thead>
         <tbody>
-        {% for row in azs_product_list %}
+        {% for row in outlet_product_list %}
             <tr>
                 <td>{{ row.product_name }}</td>
-                <td>{{ row.azs_name }}</td>
+                <td>{{ row.name }}</td>
                 <td>{{ row.token }}</td>
                 <td>{{ row.ts_create|datetime('%d.%m.%Y %H:%M:%S') }}</td>
                 <td>{{ row.ts_usage|datetime('%d.%m.%Y %H:%M:%S') }}</td>

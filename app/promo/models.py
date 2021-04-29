@@ -184,6 +184,11 @@ class Product(db.Model):
     user_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
     user = relationship(User, backref='products')
 
+    def in_the_period(self, d1, d2):
+        product = db.session.query(OutletProduct). \
+            filter(and_(OutletProduct.product_id == self.id, OutletProduct.ts_create >= d1, OutletProduct.ts_create <= d2))
+        return product
+
     def update(self, *, name, code, date_begin, date_end, max_count, max_count_per_outlet, bar_code, enabled):
         self.name = name
         self.code = code
@@ -220,8 +225,7 @@ class Product(db.Model):
         return False
 
     @classmethod
-    def get_create_product(cls, *, product_id=None, date=None):
-        from datetime import datetime, timedelta
+    def get_create_product(cls, *, product_id=None, date=datetime.utcnow()):
         res = db.session.query(OutletProduct.product_id, func.date(OutletProduct.ts_create),
                                func.count(OutletProduct.ts_create)). \
             join(OutletRequest).join(Product). \

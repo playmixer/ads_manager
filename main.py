@@ -26,6 +26,7 @@ def create_app():
     from app.auth import auth_app
     from app.admin import admin
     from app.promo import promo_app
+    from app.data import data_app
 
     subdirectory = config.SUBDIRECTORY
 
@@ -34,6 +35,7 @@ def create_app():
     app.register_blueprint(auth_app, url_prefix=subdirectory + '/auth')
     app.register_blueprint(api_app, url_prefix=subdirectory + '/api/v0')
     app.register_blueprint(api_app_auth, url_prefix=subdirectory + '/api/v0/auth')
+    app.register_blueprint(data_app, url_prefix=subdirectory + '/data')
     app.register_blueprint(admin, url_prefix=subdirectory + '/admin')
 
     app.errorhandler(404)(

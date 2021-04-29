@@ -24,6 +24,7 @@
             <th>Количество для точки</th>
             <th>Баркод</th>
             <th>Включен</th>
+            <th>Пользователь</th>
         </tr>
         </thead>
         <tbody>
@@ -37,6 +38,7 @@
                 <td>{{ product.max_count_per_outlet }}</td>
                 <td>{{ product.bar_code }}</td>
                 <td>{{ product.enabled }}</td>
+                <td>{{ product.user.id }}</td>
             </tr>
         {% endfor %}
         </tbody>

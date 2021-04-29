@@ -15,7 +15,8 @@
     ] %}
         {% include 'components/breadcrumbs.html' %}
     {% endwith %}
-    {% include 'promo/chart/product_by_status.html' %}
+{#    {% include 'promo/chart/product_by_status.html' %}#}
+    {% include 'components/chart/chart.html' %}
     <div class="mb-2">
         <a href="{{ url_for('promo.product_delete', product_id=product.id ) }}" class="btn btn-outline-danger">Удалить {{ product.name }}</a>
     </div>
@@ -100,4 +101,23 @@
             </div>
         </div>
     </form>
+{% endblock %}
+
+{% block script %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script>
+        const charts_variable = {
+            period: {
+                title: "По дням",
+                url: "{{ url_for('data.product_by_status', product_id=product.id) }}"
+            }
+        }
+
+        $(document).ready(function () {
+            setSelectContentChart(charts_variable);
+            renderChart()
+        })
+
+    </script>
 {% endblock %}

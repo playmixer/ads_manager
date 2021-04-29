@@ -21,20 +21,19 @@ def index():
     return redirect(url_for('.promo_azs_product'))
 
 
-@admin.route('/promo/azs')
+@admin.route('/promo/outlet')
 @decorators.login_required
 @decorators.role_required(role='admin')
-def promo_azs():
+def promo_outlet():
     try:
-        azs_list = session.query(Outlet)
+        azs_list = db.session.query(Outlet)
         return render_template('admin/outlet/outlet.html', outlet_list=azs_list)
     except Exception as err:
-        session.rollback()
         logger.error(f'promo_azs \n\t{str(err)}')
         return str(err)
 
 
-@admin.route('/promo/azs/new', methods=['GET', 'POST'])
+@admin.route('/promo/outlet/new', methods=['GET', 'POST'])
 @decorators.login_required
 @decorators.role_required(role='admin')
 def promo_azs_new():
@@ -80,7 +79,7 @@ def promo_azs_new():
         return str(err)
 
 
-@admin.route('/promo/azs/<outlet_id>/edit', methods=['GET', 'POST'])
+@admin.route('/promo/outlet/<outlet_id>/edit', methods=['GET', 'POST'])
 @decorators.login_required
 @decorators.role_required(role='admin')
 def promo_azs_edit(outlet_id):
@@ -151,10 +150,9 @@ def promo_azs_delete(outlet_id):
 @decorators.role_required(role='admin')
 def promo_products():
     try:
-        product_list = session.query(Product)
+        product_list = db.session.query(Product)
         return render_template('admin/products/products.html', product_list=product_list)
     except Exception as err:
-        session.rollback()
         return str(err)
 
 
@@ -192,7 +190,6 @@ def promo_products_new():
 
         return render_template('admin/products/new.html', form=form)
     except Exception as err:
-        session.rollback()
         return str(err)
 
 
@@ -201,7 +198,7 @@ def promo_products_new():
 @decorators.role_required(role='admin')
 def promo_products_edit(product_id):
     try:
-        product = session.query(Product).get(product_id)
+        product = db.session.query(Product).get(product_id)
 
         form = forms.Product()
 
@@ -230,7 +227,6 @@ def promo_products_edit(product_id):
 
         return render_template('admin/products/edit.html', product=product, form=form)
     except Exception as err:
-        session.rollback()
         return str(err)
 
 
@@ -258,12 +254,12 @@ def promo_products_delete(product_id):
 @decorators.login_required
 @decorators.role_required(role='admin')
 def promo_azs_product():
-    azs_product_list = database.select(
-        """select p.name as product_name, a.name as azs_name, a.status, ar.token, ar.ts_create, ap.ts_usage from azs_product ap
-join products p on ap.product_id = p.id
-left join outlet_request ar on ap.outlet_request_id = ar.id
-join azs a on ar.outlet_id = a.id""")
-    return render_template('admin/azs_product.html', azs_product_list=azs_product_list)
+    outlet_product_list = db.session.query(Product.name.label('product_name'), Outlet.name, Outlet.status, OutletRequest.token,
+                                        OutletProduct.ts_create, OutletProduct.ts_usage). \
+        join(OutletProduct, OutletProduct.product_id == Product.id). \
+        join(OutletRequest, OutletRequest.id == OutletProduct.outlet_request_id). \
+        join(Outlet, Outlet.id == OutletRequest.outlet_id)
+    return render_template('admin/outlet_product.html', outlet_product_list=outlet_product_list)
 
 
 @admin.route('/promo/azs_request')
