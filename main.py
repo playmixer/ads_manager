@@ -3,6 +3,7 @@ from src.database import db
 from src.template import processor, filters
 from app.auth import decorators
 import config
+import os
 
 
 # from src.models import *
@@ -44,7 +45,7 @@ def create_app():
 
     @app.route('/favicon.ico')
     def favicon():
-        return send_from_directory('static', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+        return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
     @app.route(subdirectory + '/source')
     def source():
