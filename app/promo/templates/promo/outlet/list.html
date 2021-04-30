@@ -2,6 +2,12 @@
 
 {% block title %}{% endblock %}
 
+{% block css %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
+{% endblock %}
+
 {% block content %}
     <div class="row justify-content-md-center mb-5">
         <div>
@@ -14,7 +20,10 @@
             ] %}
                 {% include 'components/breadcrumbs.html' %}
             {% endwith %}
-            {% include 'promo/chart/outlet_list_create_product.html' %}
+            {% set char_id1 = utils.generate_string(10) %}
+            {% with chart_index=char_id1 %}
+                {% include 'components/chart/chart.html' %}
+            {% endwith %}
             <div class="d-flex">
                 <a href="{{ url_for('promo.outlet_new') }}" class="btn btn-outline-primary">
                     Добавить точку
@@ -60,4 +69,16 @@
 
         </div>
     </div>
+    <script>
+        $(document).ready(function () {
+            setSelectContentChart_{{ char_id1 }}({
+                period: {
+                    title: "Просмотры QR-кода",
+                    url: "{{ url_for('data.outlet_promo_qr_views') }}"
+                }
+            });
+            renderChart_{{ char_id1 }}()
+        })
+
+    </script>
 {% endblock %}

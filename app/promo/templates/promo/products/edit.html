@@ -4,6 +4,12 @@
     Добавить
 {% endblock %}
 
+{% block css %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
+{% endblock %}
+
 {% block content %}
     {% with title='Продукт ' + product.name %}
         {% include 'components/label_of_page.html' %}
@@ -15,10 +21,13 @@
     ] %}
         {% include 'components/breadcrumbs.html' %}
     {% endwith %}
-{#    {% include 'promo/chart/product_by_status.html' %}#}
-    {% include 'components/chart/chart.html' %}
+    {% set char_id1 = utils.generate_string(10) %}
+    {% with chart_index=char_id1 %}
+        {% include 'components/chart/chart.html' %}
+    {% endwith %}
     <div class="mb-2">
-        <a href="{{ url_for('promo.product_delete', product_id=product.id ) }}" class="btn btn-outline-danger">Удалить {{ product.name }}</a>
+        <a href="{{ url_for('promo.product_delete', product_id=product.id ) }}"
+           class="btn btn-outline-danger">Удалить {{ product.name }}</a>
     </div>
     {% include 'components/flash_messages.html' %}
     <form method="POST" action="{{ url_for('promo.product_edit', product_id=product.id) }}" class="mb-5">
@@ -101,22 +110,20 @@
             </div>
         </div>
     </form>
-{% endblock %}
 
-{% block script %}
-    {{ super() }}
-    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
     <script>
-        const charts_variable = {
-            period: {
-                title: "По дням",
-                url: "{{ url_for('data.product_by_status', product_id=product.id) }}"
-            }
-        }
-
         $(document).ready(function () {
-            setSelectContentChart(charts_variable);
-            renderChart()
+            setSelectContentChart_{{ char_id1 }}({
+                period: {
+                    title: "Показы подарка за период",
+                    url: "{{ url_for('data.product_by_status', product_id=product.id) }}"
+                },
+                all: {
+                    title: "Показы QR-кода за период",
+                    url: "{{ url_for('data.product_by_status_all_period', product_id=product.id) }}"
+                }
+            });
+            renderChart_{{ char_id1 }}();
         })
 
     </script>

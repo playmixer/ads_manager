@@ -2,6 +2,12 @@
 
 {% block title %}manage{% endblock %}
 
+{% block css %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
+{% endblock %}
+
 {% block content %}
     <div class="row justify-content-md-center mb-5">
         <div>
@@ -14,9 +20,10 @@
             ] %}
                 {% include 'components/breadcrumbs.html' %}
             {% endwith %}
-            <div style="width: 100%; height: 300px; display: flex; flex:1; justify-content: flex-end">
-                {% include 'manage/chart/group_viewed_count_on_week.html' %}
-            </div>
+            {% set chart_id1 = utils.generate_string(10) %}
+            {% with chart_index = chart_id1 %}
+                {% include 'components/chart/chart.html' %}
+            {% endwith %}
             <div class="row mb-5">
                 <div class="col-6 col-md-3 col-sm-6">
                     {% with header='Показов за 24 часа', text=ads_viewed.get_viewed_24h(user=auth.get_user()).count() %}
@@ -77,4 +84,16 @@
             </div>
         </div>
     </form>
+    <script>
+        $(document).ready(function () {
+            setSelectContentChart_{{ chart_id1 }}({
+                groups_views_per_day: {
+                    title: "Показы роликов",
+                    url: "{{ url_for('data.advertise_clip_views_by_groups') }}"
+                },
+            });
+            renderChart_{{ chart_id1 }}()
+        })
+
+    </script>
 {% endblock %}

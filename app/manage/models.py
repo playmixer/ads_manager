@@ -40,6 +40,7 @@ class GroupAdvertise(DateMixin, db.Model):
     title = db.Column(db.String(200), nullable=False)
     token = db.Column(db.String(200), unique=True, nullable=False, default=gen_token)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    user = db.relationship(User, foreign_keys=[user_id], backref=db.backref('groups', lazy='dynamic'))
     status = db.Column(db.Enum(StatusType), default=StatusType.disabled, nullable=False)
     time_delete = db.Column(db.DATETIME)
     who_update = db.Column(db.Integer, db.ForeignKey(User.id))

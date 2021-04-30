@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template,send_from_directory
 from src.database import db
 from src.template import processor, filters
 from app.auth import decorators
@@ -41,6 +41,10 @@ def create_app():
     app.errorhandler(404)(
         decorators.login_required(lambda x: render_template('404.html'))
     )
+
+    @app.route('/favicon.ico')
+    def favicon():
+        return send_from_directory('static', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
     @app.route(subdirectory + '/source')
     def source():

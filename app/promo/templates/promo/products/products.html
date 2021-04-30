@@ -4,6 +4,12 @@
     Продукты
 {% endblock %}
 
+{% block css %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
+{% endblock %}
+
 {% block content %}
     {% with title='Продукты' %}
         {% include 'components/label_of_page.html' %}
@@ -14,7 +20,11 @@
     ] %}
         {% include 'components/breadcrumbs.html' %}
     {% endwith %}
-    {% include 'components/chart/chart.html' %}
+
+    {% set char_id1 = utils.generate_string(10) %}
+    {% with chart_index=char_id1 %}
+        {% include 'components/chart/chart.html' %}
+    {% endwith %}
     <div class="d-flex">
         <a href="{{ url_for('promo.product_new') }}" class="btn btn-outline-primary">
             Добавить продукт
@@ -60,26 +70,19 @@
         </tbody>
     </table>
 
-{% endblock %}
-
-{% block script %}
-    {{ super() }}
-    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
     <script>
-        const charts_variable = {
+        $(document).ready(function () {
+            setSelectContentChart_{{ char_id1 }}({
             period: {
-                title: "По дням",
+                title: "Показы подарков за период (по дням)",
                 url: "{{ url_for('data.product_created') }}"
             },
             vs: {
-                title: "Общее соотношение",
+                title: "Показы подарков за период (общий)",
                 url: "{{ url_for('data.product_versus') }}"
             }
-        }
-
-        $(document).ready(function () {
-            setSelectContentChart(charts_variable);
-            renderChart()
+        });
+            renderChart_{{ char_id1 }}()
         })
 
     </script>
