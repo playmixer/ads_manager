@@ -22,6 +22,7 @@ def create_app():
     processor.init_app(app)
     filters.init_app(app)
 
+    from app.head import head_app
     from app.manage import manage_app
     from app.api import api_app, api_app_auth
     from app.auth import auth_app
@@ -31,6 +32,7 @@ def create_app():
 
     subdirectory = config.SUBDIRECTORY
 
+    app.register_blueprint(head_app, url_prefix=subdirectory + '/')
     app.register_blueprint(manage_app, url_prefix=subdirectory + '/manage')
     app.register_blueprint(promo_app, url_prefix=subdirectory + '/promo')
     app.register_blueprint(auth_app, url_prefix=subdirectory + '/auth')

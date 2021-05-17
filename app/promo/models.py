@@ -84,7 +84,7 @@ class Outlet(db.Model):
     @classmethod
     def get_usage_product(cls, *, outlet_id=None, date=None):
         res = cls.get_create_product(outlet_id=outlet_id, date=date).filter(
-            OutletProduct.ts_usage >= OutletProduct.ts_create)
+            OutletProduct.ts_usage != None)
 
         return res
 
@@ -186,7 +186,7 @@ class Product(db.Model):
 
     def in_the_period(self, d1, d2):
         product = db.session.query(OutletProduct). \
-            filter(and_(OutletProduct.product_id == self.id, OutletProduct.ts_create >= d1, OutletProduct.ts_create <= d2))
+            filter(and_(OutletProduct.product_id == self.id, func.date(OutletProduct.ts_create) >= d1, func.date(OutletProduct.ts_create) <= d2))
         return product
 
     def update(self, *, name, code, date_begin, date_end, max_count, max_count_per_outlet, bar_code, enabled):

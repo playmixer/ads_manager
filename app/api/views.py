@@ -1,6 +1,6 @@
 from flask import Blueprint, request, redirect, url_for, make_response, send_file, jsonify
 from app.manage.models import GroupAdvertise, Advertise, AdvertiseViewed
-from app.promo.models import Outlet
+from app.promo.models import Outlet, db
 from . import types
 from app.auth import decorators
 from src.logger import logger
@@ -93,3 +93,27 @@ def clip_viewed(filename):
         return render_json(result=True)
 
     return render_json(result=False, message='Can`t viewed')
+
+
+@api_app.route('/adsViews', methods=['POST'])
+@decorators.authenticated_required
+def clips_views():
+    try:
+        token = get_token_from_header()
+        if token:
+            payload = Auth.get_jwt_payload(token)
+            device_id = payload['device_id']
+
+        json = request.get_json()
+        print(json)
+        for item in json.items():
+            filename = item[0]
+            count = item[1].get('count') or 0
+            for i in range(count):
+                AdvertiseViewed.viewed(filename, device_id, commit=False)
+
+        db.session.commit()
+        return render_json(result=True)
+
+    except Exception as err:
+        return render_json(result=False, message='Can`t viewed')

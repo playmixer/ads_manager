@@ -12,7 +12,11 @@
     {% with title=ads_group.title %}
         {% include 'components/label_of_page.html' %}
     {% endwith %}
-    {% with crumbs=[{'url': url_for('manage.index'), 'title': 'Главная страница'},{'url': '', 'title': ads_group.title},] %}
+    {% with crumbs=[
+        {'url': url_for('head.index'), 'title': 'Главная страница'},
+        {'url': url_for('manage.ads_groups'), 'title': 'Реклама'},
+        {'url': '', 'title': ads_group.title},
+    ] %}
         {% include 'components/breadcrumbs.html' %}
     {% endwith %}
     {% set char_id1 = utils.generate_string(10) %}

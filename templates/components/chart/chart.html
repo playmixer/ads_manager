@@ -17,7 +17,7 @@
                 <div class="col-md-4">
                     <input type="date" class="form-control" id="chart_period_d1_{{ chart_index }}">
                 </div>
-                <div class="" style="width: 10px">
+                <div style="width: 10px">
                     <span>-</span>
                 </div>
                 <div class="col-md-4">
@@ -60,7 +60,7 @@
             ]
         }
 
-        let chartPanel_{{ chart_index }} = new Chart(document.getElementById("chart_{{ chart_index }}"), {});
+        let chartPanel_{{ chart_index }} = null; // new Chart(document.getElementById("chart_{{ chart_index }}"), {});
 
         function chartColoring_{{ chart_index }}(index) {
             return chartColors_{{ chart_index }}[index]
@@ -88,9 +88,8 @@
                     break;
                 default:
 
-
             }
-            chartPanel_{{ chart_index }}.destroy();
+            chartPanel_{{ chart_index }} && chartPanel_{{ chart_index }}.destroy();
             data.datasets = data.datasets.map(val => {
                 const color = typeof val.index === "number"
                     ? chartColoring_{{ chart_index }}(val.index)
@@ -158,13 +157,11 @@
 
         function chartFilters_{{ chart_index }}() {
             const content = document.querySelector('#chart_content_{{ chart_index }}').value;
-            {#const period = document.querySelector('#chart_period_{{ chart_index }}').value;#}
             const date1 = document.querySelector('#chart_period_d1_{{ chart_index }}').value;
             const date2 = document.querySelector('#chart_period_d2_{{ chart_index }}').value;
 
             return {
                 content: content,
-                {#period: period#}
                 date1: date1,
                 date2: date2
             }

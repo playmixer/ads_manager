@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Главная страница
+{% endblock %}
+
+{% block css %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/Chart.funnel.min.js') }}"></script>
+
+{% endblock %}
+
+{% block content %}
+    {% with title="Главная страница" %}
+        {% include 'components/label_of_page.html' %}
+    {% endwith %}
+
+    {% include 'head/advertise.html' %}
+
+    {% include 'head/promo.html' %}
+
+{% endblock %}

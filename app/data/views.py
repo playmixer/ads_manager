@@ -1,7 +1,9 @@
 from flask import Blueprint, jsonify, request
 from app.auth import decorators, Auth
-from app.promo.models import Product, Outlet, OutletProduct
+from app.promo.models import Product, Outlet, OutletProduct, OutletRequest, db
+from sqlalchemy import and_, func
 from app.manage.models import GroupAdvertise, Advertise
+from app.auth.models import User
 from datetime import datetime, timedelta
 from src import formats
 from .chart import Chart
@@ -82,25 +84,24 @@ def product_created():
 def product_versus():
     user = Auth.get_user()
 
-    date1 = request.args.get('date1')
-    date2 = request.args.get('date2')
-    diapason = time_delta_period(date1, date2)
+    chart = Chart()
+    diapason = time_delta_period(chart.args.date1, chart.args.date2)
 
     products = user.products
     labels = list(product.name for product in products)
 
     products_data = list(
-        product.in_the_period(min(diapason), max(diapason)).count()
+        product.in_the_period(chart.args.date1, chart.args.date2).count()
         for product in products
     )
 
-    data = {
-        'labels': labels,
-        'datasets': [{
+    chart.labels = labels
+    chart.add_data({
             'data': products_data,
             'index': list(range(len(products)))
-        }]
-    }
+        })
+
+    data = chart.get_data()
 
     return render_json(True, {
         'type': 'pie',
@@ -122,10 +123,10 @@ def product_by_status(product_id):
         {
             'action': lambda x: Product.get_create_product(product_id=product.id, date=x). \
                 filter(OutletProduct.ts_usage == None).all(),
-            'title': 'Получено'
+            'title': 'Показан QR-код'
         }, {
             'action': lambda x: Product.get_usage_product(product_id=product.id, date=x).all(),
-            'title': 'Активировано'
+            'title': 'Показан подарок'
         }
     ]
 
@@ -161,10 +162,10 @@ def product_by_status_all_period(product_id):
         {
             'action': lambda x: Product.get_create_product(product_id=product.id, date=x). \
                 filter(OutletProduct.ts_usage == None).all(),
-            'title': 'Показ подарка'
+            'title': 'Показан QR-код'
         }, {
             'action': lambda x: Product.get_usage_product(product_id=product.id, date=x).all(),
-            'title': 'Получение подарка'
+            'title': 'Показан подарок'
         }
     ]
     chart.labels = list(f['title'] for f in func)
@@ -305,7 +306,7 @@ def outlet_promo_qr_views_by_outlet(outlet_id):
         {
             'action': lambda x: outlet.get_create_product(outlet_id=outlet.id, date=x). \
                 filter(OutletProduct.ts_usage == None).first(),
-            'label': 'Показ QR-кода'
+            'label': 'Показ QR-кода (без подарка)'
         },
         {
             'action': lambda x: outlet.get_usage_product(outlet_id=outlet.id, date=x).first(),
@@ -349,7 +350,7 @@ def outlet_promo_qr_views_by_outlet_all(outlet_id):
         {
             'action': lambda x: outlet.get_create_product(outlet_id=outlet.id, date=x). \
                 filter(OutletProduct.ts_usage == None).first(),
-            'label': 'Показ QR-кода'
+            'label': 'Показ QR-кода (без перехода к показу подарка)'
         },
         {
             'action': lambda x: outlet.get_usage_product(outlet_id=outlet.id, date=x).first(),
@@ -375,4 +376,56 @@ def outlet_promo_qr_views_by_outlet_all(outlet_id):
     return render_json(True, {
         'type': 'pie',
         'data': chart.get_data()
+    })
+
+
+@data_app.route('/promo_all/')
+@decorators.login_required
+def promo_all():
+    user = Auth.get_user()
+
+    chart = Chart()
+
+    diapason = time_delta_period(chart.args.date1, chart.args.date2)
+
+    chart.labels = list(d.strftime(formats.DATE) for d in diapason)
+
+    chart.labels = ['Показан промо-ролик', 'Показан QR-код', 'Показан подарок', 'Получение подарка']
+    product_period = {
+        'label': [],
+        'data': [],
+        'index': [0, 1, 2, 3]
+    }
+
+    req_count = db.session.query(OutletRequest).join(Outlet, OutletRequest.outlet_id == Outlet.id) \
+        .join(User, User.id == Outlet.user_id) \
+        .filter(
+        and_(User.id == user.id, OutletRequest.ts_usage != None, func.date(OutletRequest.ts_create) >= chart.args.date1,
+             func.date(OutletRequest.ts_create) <= chart.args.date2))
+
+    product_period['data'].append(req_count.count())
+
+    req_code = req_count.join(OutletProduct, OutletProduct.outlet_request_id == OutletRequest.id)
+    product_period['data'].append(req_code.count())
+
+    req_shows = req_code.filter(OutletProduct.ts_usage != None)
+    product_period['data'].append(req_shows.count())
+    chart.add_data(product_period)
+
+    product_period['data'].append(0)
+    chart.add_data(product_period)
+
+    data = chart.get_data()
+
+    return render_json(True, {
+        'type': 'funnel',
+        'data': data,
+        'options': {
+            'title': {
+                'display': True,
+                'text': 'Воронка активности промо'
+            },
+            'sort': 'desc',
+            'keep': 'auto'
+        }
     })

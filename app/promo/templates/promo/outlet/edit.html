@@ -15,7 +15,7 @@
         {% include 'components/label_of_page.html' %}
     {% endwith %}
     {% with crumbs=[
-        {'url': url_for('promo.index'), 'title': 'Главная страница'},
+        {'url': url_for('head.index'), 'title': 'Главная страница'},
         {'url': url_for('promo.index'), 'title': 'Торговые точки'},
         {'url': '', 'title': 'Точка ' + outlet.name}
     ] %}

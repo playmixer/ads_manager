@@ -35,7 +35,7 @@
                 </li>
             </ul>
 
-            <a href="{{ url_for('manage.index') }}" class="nav-link link-light">На сайт</a>
+            <a href="{{ url_for('head.index') }}" class="nav-link link-light">На сайт</a>
             <a class="nav-link link-light" href="{{ url_for('auth.cabinet') }}"><span style="margin-right: 5px">{{ auth.get_username() }}</span></a>
             <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light d-flex">Выход</a>
         </div>

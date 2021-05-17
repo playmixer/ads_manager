@@ -12,8 +12,13 @@
     {% if auth.is_authenticated() %}
         {% include 'components/base_navbar.html' %}
     {% endif %}
-    {% block content %}
-    {% endblock %}
+    <div class="" style="min-height: 100vh; height: calc(100vh + 50px)">
+        {% block content %}
+        {% endblock %}
+    </div>
+    <div class="footer bg-light d-flex justify-content-center align-items-center" style="height: 50px">
+        <div><span></span></div>
+    </div>
 </div>
 
 {% block script %}

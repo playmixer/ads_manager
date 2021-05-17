@@ -1,0 +1,21 @@
+<div>
+    <span class="h4 m-lg-4">Подарки</span>
+    {% set chart_id1 = utils.generate_string(10) %}
+    {% with chart_index = chart_id1 %}
+        {% include 'components/chart/chart.html' %}
+    {% endwith %}
+
+    <script>
+        $(document).ready(function () {
+
+            setSelectContentChart_{{ chart_id1 }}({
+                groups_views_per_day: {
+                    title: "Воронка показов промо",
+                    url: "{{ url_for('data.promo_all') }}"
+                },
+            });
+            renderChart_{{ chart_id1 }}()
+        })
+
+    </script>
+</div>

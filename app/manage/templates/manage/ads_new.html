@@ -7,7 +7,8 @@
         {% include 'components/label_of_page.html' %}
     {% endwith %}
     {% with crumbs=[
-        {'url': url_for('manage.index'), 'title': 'Главная страница'},
+        {'url': url_for('head.index'), 'title': 'Главная страница'},
+        {'url': url_for('manage.ads_groups'), 'title': 'Реклама'},
         {'url': url_for('manage.ads_group', group_id=ads_group.id), 'title': ads_group.title},
         {'url': '', 'title': 'Добавить рекламу'}
     ] %}

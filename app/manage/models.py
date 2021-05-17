@@ -303,12 +303,13 @@ class AdvertiseViewed(db.Model):
     device_id = db.Column(db.String(200))
 
     @classmethod
-    def viewed(cls, filename, device_id=''):
+    def viewed(cls, filename, device_id='', commit=True):
         ads = Advertise.get_ads_by_filename(filename)
         if ads:
             view = cls(advertise_id=ads.id, device_id=device_id, date_viewed=datetime.datetime.utcnow())
             db.session.add(view)
-            db.session.commit()
+            if commit:
+                db.session.commit()
             return view
         return False
 
